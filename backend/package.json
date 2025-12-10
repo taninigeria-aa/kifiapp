@@ -6,6 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/server.ts",
     "setup-phase7": "ts-node setup-phase7.ts",
+    "cleanup-demo": "ts-node cleanup-demo.ts",
     "build": "tsc",
     "start": "node dist/server.js"
   },
