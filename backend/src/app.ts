@@ -1,0 +1,43 @@
+import express, { Application } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import authRoutes from './routes/auth.routes';
+import dashboardRoutes from './routes/dashboard.routes';
+import spawnRoutes from './routes/spawn.routes';
+import broodstockRoutes from './routes/broodstock.routes';
+import productionRoutes from './routes/production.routes';
+import salesRoutes from './routes/sales.routes';
+import financeRoutes from './routes/finance.routes';
+import peopleRoutes from './routes/people.routes';
+
+const app: Application = express();
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+app.use(helmet());
+app.use(morgan('dev'));
+
+// Routes
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/spawns', spawnRoutes);
+app.use('/api/v1/broodstock', broodstockRoutes);
+app.use('/api/v1/production', productionRoutes);
+app.use('/api/v1/sales', salesRoutes);
+app.use('/api/v1/finance', financeRoutes);
+app.use('/api/v1/people', peopleRoutes);
+
+// Health Check
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// 404 Handler
+app.use((req, res) => {
+    res.status(404).json({ success: false, message: 'Route not found' });
+});
+
+export default app;

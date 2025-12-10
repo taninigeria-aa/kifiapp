@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: tanitrack-db
+    environment:
+      POSTGRES_DB: tanitrack
+      POSTGRES_USER: tanitrack_user
+      POSTGRES_PASSWORD: tanitrack_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "5433:5432"
+    networks:
+      - tanitrack-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U tanitrack_user -d tanitrack" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tanitrack-api
+    environment:
+      DATABASE_URL: postgresql://tanitrack_user:tanitrack_password@postgres:5432/tanitrack
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: tanitrack
+      DB_USER: tanitrack_user
+      DB_PASSWORD: tanitrack_password
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      JWT_EXPIRES_IN: 7d
+      NODE_ENV: production
+      PORT: 3000
+      ALLOWED_ORIGINS: http://localhost,http://localhost:80,http://localhost:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tanitrack-network
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3000
+    container_name: tanitrack-web
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - tanitrack-network
+    restart: unless-stopped
+
+networks:
+  tanitrack-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
