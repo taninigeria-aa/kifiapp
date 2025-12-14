@@ -21,16 +21,16 @@ router.use(authenticateToken);
 router.get('/tanks', getTanks);
 
 // Batches
-router.get('/batches', authenticateToken, getBatches);
-router.post('/batches', authenticateToken, createBatch);
-router.get('/batches/:id', authenticateToken, getBatchById);
-router.put('/batches/:id', authenticateToken, updateBatch);
-router.get('/batches/report/production', authenticateToken, getProductionReport);
+router.get('/batches', getBatches);
+router.post('/batches', createBatch);
+router.get('/batches/:id', getBatchById);
+router.put('/batches/:id', updateBatch);
+router.get('/batches/report/production', getProductionReport);
 
 // Growth & Movements
-router.post('/batches/:id/growth', authenticateToken, addGrowthSample);
-router.get('/batches/:id/growth', authenticateToken, getGrowthSamples);
-router.post('/batches/:id/move', authenticateToken, moveBatch);
-router.get('/batches/:id/movements', authenticateToken, getBatchMovements);
+router.post('/batches/:id/growth', addGrowthSample);
+router.get('/batches/:id/growth', getGrowthSamples);
+router.post('/batches/:id/move', moveBatch);
+router.get('/batches/:id/movements', getBatchMovements);
 
 export default router;

@@ -3,6 +3,51 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { query } from '../config/db';
 
+export const register = async (req: Request, res: Response) => {
+    const { username, password, phone_number, full_name, role_name } = req.body;
+
+    if (!username || !password || !phone_number || !full_name) {
+        return res.status(400).json({ success: false, message: 'Missing required fields' });
+    }
+
+    try {
+        // Check if user already exists
+        const userCheck = await query('SELECT * FROM users WHERE username = $1 OR phone_number = $2', [username, phone_number]);
+        if (userCheck.rows.length > 0) {
+            return res.status(409).json({ success: false, message: 'Username or phone number already exists' });
+        }
+
+        // Get role ID
+        const roleResult = await query('SELECT role_id FROM user_roles WHERE role_name = $1', [role_name || 'junior_assistant']);
+        if (roleResult.rows.length === 0) {
+            return res.status(400).json({ success: false, message: 'Invalid role' });
+        }
+        const role_id = roleResult.rows[0].role_id;
+
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Create user
+        const result = await query(
+            `INSERT INTO users (username, password_hash, phone_number, full_name, role_id) 
+             VALUES ($1, $2, $3, $4, $5) 
+             RETURNING user_id, username, full_name, created_at`,
+            [username, hashedPassword, phone_number, full_name, role_id]
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'User registered successfully',
+            data: result.rows[0]
+        });
+
+    } catch (error: any) {
+        console.error('Registration error:', error);
+        res.status(500).json({ success: false, message: 'Server error: ' + error.message });
+    }
+};
+
 export const login = async (req: Request, res: Response) => {
     const { phone_number, password } = req.body;
 
