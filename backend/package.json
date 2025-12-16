@@ -10,7 +10,8 @@
     "reset-db": "ts-node reset-db.ts",
     "delete-all-data": "ts-node delete-all-data.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "prod-db-init": "ts-node database/init-prod.ts"
   },
   "keywords": [],
   "author": "",
