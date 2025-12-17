@@ -7,7 +7,7 @@ export const getFeedInventory = async (req: Request, res: Response) => {
     try {
         const result = await query(`
             SELECT i.inventory_id as feed_id, t.feed_name as name, t.category as type, i.current_stock_kg as quantity_kg, 
-                   i.unit_cost_ngn as cost_per_kg, i.supplier_name as supplier, i.notes
+                   i.unit_cost_ngn as cost_per_kg, i.supplier_name as supplier, i.notes, i.last_purchase_date, i.last_purchase_date
             FROM feed_inventory i
             LEFT JOIN feed_types t ON i.feed_type_id = t.feed_type_id
             ORDER BY t.feed_name ASC
@@ -87,12 +87,18 @@ export const recordPurchase = async (req: Request, res: Response) => {
 
         // 3. Record Purchase History
         await query(
-            `INSERT INTO feed_purchases (inventory_id, bag_size_kg, num_bags, total_quantity_kg, cost_per_bag, total_cost_ngn, supplier, notes) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-            [inventoryId, bag_size_kg, num_bags, total_quantity_kg, cost_per_bag, total_cost_ngn, supplier, notes]
+            `INSERT INTO feed_purchases (inventory_id, bag_size_kg, num_bags, total_quantity_kg, cost_per_bag, total_cost_ngn, supplier, notes, purchase_date) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+            [inventoryId, bag_size_kg, num_bags, total_quantity_kg, cost_per_bag, total_cost_ngn, supplier, notes, purchase_date || new Date()]
         );
 
-        // 4. Auto-Record Expense
+        // 4. Update Last Purchase Date in Inventory
+        await query(
+            'UPDATE feed_inventory SET last_purchase_date = $1 WHERE inventory_id = $2',
+            [purchase_date || new Date(), inventoryId]
+        );
+
+        // 5. Auto-Record Expense
         await query(
             `INSERT INTO expenses (amount_ngn, description, expense_date) 
              VALUES ($1, $2, CURRENT_DATE)`,
