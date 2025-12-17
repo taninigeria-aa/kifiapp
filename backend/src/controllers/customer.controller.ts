@@ -31,3 +31,29 @@ export const createCustomer = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: error.message || 'Server error' });
     }
 };
+
+export const updateCustomer = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { name, phone, email, address, notes } = req.body;
+
+        if (!name) return res.status(400).json({ success: false, message: 'Name is required' });
+
+        const result = await query(
+            `UPDATE customers 
+             SET full_name = $1, phone_number = $2, email = $3, location = $4, notes = $5
+             WHERE customer_id = $6
+             RETURNING *`,
+            [name, phone, email, address, notes, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Customer not found' });
+        }
+
+        res.json({ success: true, data: result.rows[0], message: 'Customer updated successfully' });
+    } catch (error: any) {
+        console.error('Update customer error:', error);
+        res.status(500).json({ success: false, message: error.message || 'Server error' });
+    }
+};

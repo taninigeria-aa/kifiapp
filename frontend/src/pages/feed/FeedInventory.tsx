@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { Plus, Package } from 'lucide-react';
+import { Plus, Package, Pencil } from 'lucide-react';
 import { AppLayout } from '../../components/layout/AppLayout';
 import api from '../../lib/api';
 
@@ -21,13 +21,17 @@ export default function FeedInventory() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [formData, setFormData] = useState({
+        id: null as number | null,
         name: '',
         type: 'Pellets',
         bag_size_kg: '',
         num_bags: '',
         cost_per_bag: '',
         supplier: '',
-        notes: ''
+        notes: '',
+        // For editing existing items directly (simplified view)
+        isEdit: false,
+        cost_per_kg: ''
     });
 
     // Calculated values for display
@@ -57,14 +61,60 @@ export default function FeedInventory() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await api.post('/finance/feed', formData);
+            if (formData.isEdit && formData.id) {
+                const finalCostPerKg = formData.bag_size_kg && formData.cost_per_bag
+                    ? (Number(formData.cost_per_bag) / Number(formData.bag_size_kg)).toFixed(2)
+                    : formData.cost_per_kg;
+
+                await api.put(`/finance/feed/${formData.id}`, {
+                    name: formData.name,
+                    type: formData.type,
+                    cost_per_kg: finalCostPerKg,
+                    supplier: formData.supplier,
+                    notes: formData.notes
+                });
+                alert('Feed item updated!');
+            } else {
+                await api.post('/finance/feed', formData);
+                alert('Purchase recorded! (Inventory updated & Expense logged)');
+            }
             setShowModal(false);
-            setFormData({ name: '', type: 'Pellets', bag_size_kg: '', num_bags: '', cost_per_bag: '', supplier: '', notes: '' });
+            resetForm();
             fetchFeed();
-            alert('Purchase recorded! (Inventory updated & Expense logged)');
         } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-            alert(error.response?.data?.message || 'Failed to record purchase');
+            alert(error.response?.data?.message || 'Failed to save');
         }
+    };
+
+    const resetForm = () => {
+        setFormData({
+            id: null,
+            name: '',
+            type: 'Pellets',
+            bag_size_kg: '',
+            num_bags: '',
+            cost_per_bag: '',
+            supplier: '',
+            notes: '',
+            isEdit: false,
+            cost_per_kg: ''
+        });
+    };
+
+    const handleEdit = (item: FeedItem) => {
+        setFormData({
+            id: item.feed_id,
+            name: item.name,
+            type: item.type,
+            bag_size_kg: '', // Not needed for update
+            num_bags: '', // Not needed for update
+            cost_per_bag: '', // Not needed for update
+            supplier: item.supplier,
+            notes: item.notes,
+            isEdit: true,
+            cost_per_kg: item.cost_per_kg
+        });
+        setShowModal(true);
     };
 
     return (
@@ -82,6 +132,10 @@ export default function FeedInventory() {
                         <Plus className="w-4 h-4 mr-2" />
                         Record Purchase
                     </button>
+                    <button
+                        onClick={() => { resetForm(); setShowModal(true); }}
+                        className="hidden" // Helper for creating new logic if needed
+                    ></button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -102,7 +156,16 @@ export default function FeedInventory() {
                                             {Number(item.quantity_kg) < 50 ? 'Low Stock' : 'In Stock'}
                                         </span>
                                     </div>
-                                    <h3 className="text-lg font-bold text-gray-900 mb-1">{item.name}</h3>
+                                    <div className="flex justify-between items-start mb-1">
+                                        <h3 className="text-lg font-bold text-gray-900">{item.name}</h3>
+                                        <button
+                                            onClick={() => handleEdit(item)}
+                                            className="text-gray-400 hover:text-blue-600 p-1"
+                                            title="Edit Item"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                     <p className="text-sm text-gray-500 mb-4">{item.type || 'Standard'}</p>
 
                                     <div className="space-y-2 text-sm text-gray-600">
@@ -129,7 +192,7 @@ export default function FeedInventory() {
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
                     <div className="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto my-8">
-                        <h3 className="text-lg font-bold mb-4">Record Feed Purchase</h3>
+                        <h3 className="text-lg font-bold mb-4">{formData.isEdit ? 'Edit Feed Item' : 'Record Feed Purchase'}</h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium mb-1">Feed Name</label>
@@ -149,37 +212,73 @@ export default function FeedInventory() {
                                 </select>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium mb-1">Num Bags</label>
-                                    <input type="number" value={formData.num_bags} onChange={e => setFormData({ ...formData, num_bags: e.target.value })} className="w-full p-2 border rounded" placeholder="e.g. 10" required />
+                            {!formData.isEdit && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">Num Bags</label>
+                                        <input type="number" value={formData.num_bags} onChange={e => setFormData({ ...formData, num_bags: e.target.value })} className="w-full p-2 border rounded" placeholder="e.g. 10" required />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">Bag Size (kg)</label>
+                                        <input type="number" step="0.1" value={formData.bag_size_kg} onChange={e => setFormData({ ...formData, bag_size_kg: e.target.value })} className="w-full p-2 border rounded" placeholder="e.g. 15" required />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1">Bag Size (kg)</label>
-                                    <input type="number" step="0.1" value={formData.bag_size_kg} onChange={e => setFormData({ ...formData, bag_size_kg: e.target.value })} className="w-full p-2 border rounded" placeholder="e.g. 15" required />
-                                </div>
-                            </div>
+                            )}
 
-                            <div>
-                                <label className="block text-sm font-medium mb-1">Cost per Bag (₦)</label>
-                                <input type="number" value={formData.cost_per_bag} onChange={e => setFormData({ ...formData, cost_per_bag: e.target.value })} className="w-full p-2 border rounded" placeholder="e.g. 15000" required />
-                            </div>
+                            {!formData.isEdit ? (
+                                <div>
+                                    <label className="block text-sm font-medium mb-1">Cost per Bag (₦)</label>
+                                    <input type="number" value={formData.cost_per_bag} onChange={e => setFormData({ ...formData, cost_per_bag: e.target.value })} className="w-full p-2 border rounded" placeholder="e.g. 15000" required />
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1">Update Bag Size (kg)</label>
+                                            <input type="number" step="0.1" value={formData.bag_size_kg} onChange={e => setFormData({ ...formData, bag_size_kg: e.target.value })} className="w-full p-2 border rounded" placeholder="Optional" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1">Update Cost/Bag (₦)</label>
+                                            <input type="number" value={formData.cost_per_bag} onChange={e => setFormData({ ...formData, cost_per_bag: e.target.value })} className="w-full p-2 border rounded" placeholder="Optional" />
+                                        </div>
+                                    </div>
 
-                            {/* Live Calculation Preview */}
-                            <div className="bg-gray-50 p-3 rounded text-sm text-gray-700 space-y-1">
-                                <div className="flex justify-between">
-                                    <span>Total Quantity:</span>
-                                    <span className="font-bold">{totalKg.toLocaleString()} kg</span>
+                                    {formData.bag_size_kg && formData.cost_per_bag && (
+                                        <p className="text-sm text-blue-600">
+                                            New Avg Cost: ₦{(Number(formData.cost_per_bag) / Number(formData.bag_size_kg)).toFixed(2)} /kg
+                                        </p>
+                                    )}
+
+                                    <div>
+                                        <label className="block text-sm font-medium mb-1">Or Set Avg Cost per Kg Directly (₦)</label>
+                                        <input
+                                            type="number"
+                                            value={formData.cost_per_kg}
+                                            onChange={e => setFormData({ ...formData, cost_per_kg: e.target.value })}
+                                            className="w-full p-2 border rounded"
+                                            disabled={!!(formData.bag_size_kg && formData.cost_per_bag)}
+                                        />
+                                    </div>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span>Total Cost:</span>
-                                    <span className="font-bold">₦{totalCost.toLocaleString()}</span>
+                            )}
+
+                            {/* Live Calculation Preview (Only for Purchase) */}
+                            {!formData.isEdit && (
+                                <div className="bg-gray-50 p-3 rounded text-sm text-gray-700 space-y-1">
+                                    <div className="flex justify-between">
+                                        <span>Total Quantity:</span>
+                                        <span className="font-bold">{totalKg.toLocaleString()} kg</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Total Cost:</span>
+                                        <span className="font-bold">₦{totalCost.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-xs text-gray-500 border-t border-gray-200 pt-1 mt-1">
+                                        <span>Effective Cost/kg:</span>
+                                        <span>{totalKg > 0 ? `₦${(totalCost / totalKg).toFixed(2)}` : '-'} /kg</span>
+                                    </div>
                                 </div>
-                                <div className="flex justify-between text-xs text-gray-500 border-t border-gray-200 pt-1 mt-1">
-                                    <span>Effective Cost/kg:</span>
-                                    <span>{totalKg > 0 ? `₦${(totalCost / totalKg).toFixed(2)}` : '-'} /kg</span>
-                                </div>
-                            </div>
+                            )}
 
                             <div>
                                 <label className="block text-sm font-medium mb-1">Supplier</label>
@@ -200,7 +299,7 @@ export default function FeedInventory() {
                             </div>
                             <div className="flex justify-end gap-2 pt-2">
                                 <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
-                                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Record Purchase</button>
+                                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">{formData.isEdit ? 'Update Feed' : 'Record Purchase'}</button>
                             </div>
                         </form>
                     </div>

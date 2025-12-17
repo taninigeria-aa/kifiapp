@@ -59,7 +59,7 @@ export default function NewBatch() {
 
             const response = await api.post('/production/batches', payload);
             if (response.data.success) {
-                navigate('/production/batches');
+                navigate('/batches');
             }
         } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             console.error('Create batch error', error);

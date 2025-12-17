@@ -162,3 +162,45 @@ export const getFeedLogs = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: error.message || 'Server error' });
     }
 };
+
+// Update Feed Item
+export const updateFeedItem = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const {
+            name,
+            type,
+            cost_per_kg,
+            supplier,
+            notes
+        } = req.body;
+
+        if (!name) {
+            return res.status(400).json({ success: false, message: 'Name is required' });
+        }
+
+        // 1. Update Feed Type if name/category changed
+        // We need to get the feed_type_id first
+        const invRes = await query('SELECT feed_type_id FROM feed_inventory WHERE inventory_id = $1', [id]);
+        if (invRes.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Feed item not found' });
+        }
+        const feedTypeId = invRes.rows[0].feed_type_id;
+
+        await query(
+            'UPDATE feed_types SET feed_name = $1, category = $2 WHERE feed_type_id = $3',
+            [name, type || 'Pellets', feedTypeId]
+        );
+
+        // 2. Update Inventory details
+        await query(
+            'UPDATE feed_inventory SET unit_cost_ngn = $1, supplier_name = $2, notes = $3 WHERE inventory_id = $4',
+            [cost_per_kg, supplier, notes, id]
+        );
+
+        res.json({ success: true, message: 'Feed item updated successfully' });
+    } catch (error: any) {
+        console.error('Update feed item error:', error);
+        res.status(500).json({ success: false, message: error.message || 'Server error' });
+    }
+};

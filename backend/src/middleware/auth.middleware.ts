@@ -18,7 +18,7 @@ export const authenticateToken = async (req: Request, res: Response, next: NextF
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as any;
 
         // Verify user exists and is active
-        const result = await query('SELECT user_id, username, role_id, is_active FROM users WHERE user_id = $1', [decoded.user_id]);
+        const result = await query('SELECT user_id, username, full_name, role_id, is_active FROM users WHERE user_id = $1', [decoded.user_id]);
 
         if (result.rows.length === 0) {
             return res.status(401).json({ success: false, message: 'User not found' });

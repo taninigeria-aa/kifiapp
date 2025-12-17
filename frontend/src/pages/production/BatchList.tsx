@@ -185,14 +185,14 @@ export default function BatchList() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <button
-                                                    onClick={() => navigate(`/ production / batches / ${batch.batch_id} `)}
+                                                    onClick={() => navigate(`/batches/${batch.batch_id}`)}
                                                     className="text-gray-400 hover:text-blue-600 transition-colors mr-2"
                                                     title="View Details"
                                                 >
                                                     <Eye className="w-4 h-4" />
                                                 </button>
                                                 <button
-                                                    onClick={() => navigate(`/ production / batches / edit / ${batch.batch_id} `)}
+                                                    onClick={() => navigate(`/batches/${batch.batch_id}/edit`)}
                                                     className="text-gray-400 hover:text-blue-600 transition-colors"
                                                     title="Edit Batch"
                                                 >

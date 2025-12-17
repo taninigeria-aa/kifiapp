@@ -92,7 +92,7 @@ export default function SpawnList() {
                     <div className="flex gap-2">
                         {/* Broodstock link removed/modified per simplification preference, preserving existing code if needed but focusing on Spawns */}
                         <Link
-                            to="/production/spawns/new"
+                            to="/spawns/new"
                             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm transition-colors text-sm font-medium"
                         >
                             <Plus className="w-4 h-4 mr-2" />
@@ -177,7 +177,7 @@ export default function SpawnList() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <button
-                                                    onClick={() => navigate(`/production/spawns/edit/${spawn.spawn_id}`)}
+                                                    onClick={() => navigate(`/spawns/${spawn.spawn_id}/edit`)}
                                                     className="text-gray-400 hover:text-blue-600 transition-colors"
                                                 >
                                                     <Pencil className="w-4 h-4" />

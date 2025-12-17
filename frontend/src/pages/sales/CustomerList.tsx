@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { Plus, Phone, Mail } from 'lucide-react';
+import { Plus, Phone, Mail, Pencil } from 'lucide-react';
 import { AppLayout } from '../../components/layout/AppLayout';
 import api from '../../lib/api';
 
@@ -17,6 +17,7 @@ export default function CustomerList() {
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
     const [formData, setFormData] = useState({ name: '', phone: '', email: '', address: '', notes: '' });
 
     useEffect(() => {
@@ -39,13 +40,18 @@ export default function CustomerList() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await api.post('/sales/customers', formData);
+            if (editingCustomer) {
+                await api.put(`/sales/customers/${editingCustomer.customer_id}`, formData);
+            } else {
+                await api.post('/sales/customers', formData);
+            }
             setShowModal(false);
             setFormData({ name: '', phone: '', email: '', address: '', notes: '' });
+            setEditingCustomer(null);
             fetchCustomers();
         } catch (error) {
             const err = error as { response?: { data?: { message?: string } } };
-            alert(err.response?.data?.message || 'Failed to create customer');
+            alert(err.response?.data?.message || 'Failed to save customer');
         }
     };
 
@@ -58,7 +64,11 @@ export default function CustomerList() {
                         <p className="text-gray-500">Manage your client database.</p>
                     </div>
                     <button
-                        onClick={() => setShowModal(true)}
+                        onClick={() => {
+                            setEditingCustomer(null);
+                            setFormData({ name: '', phone: '', email: '', address: '', notes: '' });
+                            setShowModal(true);
+                        }}
                         className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-sm transition-colors text-sm font-medium"
                     >
                         <Plus className="w-4 h-4 mr-2" />
@@ -75,6 +85,7 @@ export default function CustomerList() {
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -94,6 +105,25 @@ export default function CustomerList() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">{c.address}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-xs">{c.notes}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingCustomer(c);
+                                                        setFormData({
+                                                            name: c.name,
+                                                            phone: c.phone,
+                                                            email: c.email,
+                                                            address: c.address,
+                                                            notes: c.notes
+                                                        });
+                                                        setShowModal(true);
+                                                    }}
+                                                    className="text-blue-600 hover:text-blue-900 flex items-center justify-end w-full"
+                                                >
+                                                    <Pencil className="w-4 h-4 mr-1" />
+                                                    Edit
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))
                                 )}
@@ -106,7 +136,7 @@ export default function CustomerList() {
             {showModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-xl p-6 w-full max-w-md">
-                        <h3 className="text-lg font-bold mb-4">Add Customer</h3>
+                        <h3 className="text-lg font-bold mb-4">{editingCustomer ? 'Edit Customer' : 'Add Customer'}</h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium mb-1">Name</label>

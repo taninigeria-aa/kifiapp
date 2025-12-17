@@ -8,6 +8,7 @@ interface StatCardProps {
     trend?: string;
     trendDirection?: 'up' | 'down';
     color?: 'blue' | 'green' | 'orange' | 'purple';
+    onClick?: () => void;
 }
 
 export const StatCard: React.FC<StatCardProps> = ({
@@ -16,7 +17,8 @@ export const StatCard: React.FC<StatCardProps> = ({
     icon: Icon,
     trend,
     trendDirection,
-    color = 'blue'
+    color = 'blue',
+    onClick
 }) => {
     const colorStyles = {
         blue: 'bg-blue-50 text-blue-700',
@@ -26,7 +28,13 @@ export const StatCard: React.FC<StatCardProps> = ({
     };
 
     return (
-        <div className="bg-white overflow-hidden rounded-xl shadow-sm border border-gray-100 p-5">
+        <div
+            className={cn(
+                "bg-white overflow-hidden rounded-xl shadow-sm border border-gray-100 p-5 transition-all duration-200",
+                onClick && "cursor-pointer hover:shadow-md hover:border-blue-200"
+            )}
+            onClick={onClick}
+        >
             <div className="flex items-center">
                 <div className={cn("p-3 rounded-lg", colorStyles[color])}>
                     <Icon className="h-6 w-6" />

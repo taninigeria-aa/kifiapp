@@ -22,7 +22,7 @@ export default function NewSpawn() {
         try {
             const response = await api.post('/spawns', data);
             if (response.data.success) {
-                navigate('/production');
+                navigate('/spawns');
             }
         } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             console.error('Create spawn error', error);

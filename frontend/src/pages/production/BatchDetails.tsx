@@ -66,7 +66,7 @@ export default function BatchDetails() {
             <div className="space-y-6">
                 {/* Header */}
                 <div className="flex items-center gap-4">
-                    <button onClick={() => navigate('/production/batches')} className="p-2 hover:bg-gray-100 rounded-full">
+                    <button onClick={() => navigate('/batches')} className="p-2 hover:bg-gray-100 rounded-full">
                         <ArrowLeft className="w-5 h-5 text-gray-600" />
                     </button>
                     <div>

@@ -71,6 +71,7 @@ export default function Dashboard() {
                         value={loading ? '-' : summary?.active_batches || 0}
                         icon={Layers}
                         color="blue"
+                        onClick={() => navigate('/batches')}
                     />
 
                     <StatCard
@@ -78,6 +79,7 @@ export default function Dashboard() {
                         value={loading ? '-' : summary?.total_fish?.toLocaleString() || 0}
                         icon={Fish}
                         color="green"
+                        onClick={() => navigate('/batches')}
                     />
 
                     <StatCard
@@ -85,6 +87,7 @@ export default function Dashboard() {
                         value={loading ? '-' : summary?.spawns_this_week || 0}
                         icon={Sprout}
                         color="purple"
+                        onClick={() => navigate('/spawns')}
                     />
 
                     <StatCard
@@ -92,12 +95,16 @@ export default function Dashboard() {
                         value={loading ? '-' : `₦${summary?.sales_this_week?.toLocaleString() || 0} `}
                         icon={NairaSign}
                         color="orange"
+                        onClick={() => navigate('/sales')}
                     />
                 </div>
 
                 {/* Empty State / Coming Soon Sections */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 min-h-[300px] flex flex-col justify-center items-center text-center">
+                    <div
+                        onClick={() => navigate('/feed/log')}
+                        className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 min-h-[300px] flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:border-blue-200"
+                    >
                         <div className="bg-blue-50 p-4 rounded-full mb-4">
                             <ClipboardList className="h-8 w-8 text-blue-500" />
                         </div>
@@ -105,7 +112,10 @@ export default function Dashboard() {
                         <p className="text-gray-500 max-w-xs mt-2">Task management coming soon. You'll see feeding schedules and health checks here.</p>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 min-h-[300px] flex flex-col justify-center items-center text-center">
+                    <div
+                        onClick={() => navigate('/spawns')}
+                        className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 min-h-[300px] flex flex-col justify-center items-center text-center cursor-pointer transition-all duration-200 hover:shadow-md hover:border-green-200"
+                    >
                         <div className="bg-green-50 p-4 rounded-full mb-4">
                             <Fish className="h-8 w-8 text-green-500" />
                         </div>

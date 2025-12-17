@@ -54,7 +54,7 @@ export default function EditSpawn() {
             } catch (error) {
                 console.error('Fetch spawn error', error);
                 alert('Failed to load spawn details');
-                navigate('/production');
+                navigate('/spawns');
             } finally {
                 setLoading(false);
             }
@@ -67,7 +67,7 @@ export default function EditSpawn() {
         try {
             const response = await api.put(`/spawns/${id}`, data);
             if (response.data.success) {
-                navigate('/production');
+                navigate('/spawns');
             }
         } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             console.error('Update spawn error', error);

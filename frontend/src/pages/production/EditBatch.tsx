@@ -54,7 +54,7 @@ export default function EditBatch() {
             } catch (error) {
                 console.error('Failed to fetch data', error);
                 alert('Failed to load batch details');
-                navigate('/production/batches');
+                navigate('/batches');
             } finally {
                 setLoading(false);
             }
@@ -67,7 +67,7 @@ export default function EditBatch() {
         try {
             const response = await api.put(`/production/batches/${id}`, data);
             if (response.data.success) {
-                navigate('/production/batches');
+                navigate('/batches');
             }
         } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             console.error('Update batch error', error);

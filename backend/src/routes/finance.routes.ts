@@ -1,6 +1,6 @@
 
 import { Router } from 'express';
-import { getFeedInventory, recordPurchase, logFeedUsage, getFeedLogs } from '../controllers/feed.controller';
+import { getFeedInventory, recordPurchase, logFeedUsage, getFeedLogs, updateFeedItem } from '../controllers/feed.controller';
 import { getExpenses, recordExpense, getFinancialSummary, getDetailedFinancialReport } from '../controllers/finance.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 
@@ -11,6 +11,7 @@ router.use(authenticateToken);
 // Feed
 router.get('/feed', getFeedInventory);
 router.post('/feed', recordPurchase);
+router.put('/feed/:id', updateFeedItem);
 router.get('/feed/logs', getFeedLogs);
 router.post('/feed/log', logFeedUsage);
 
