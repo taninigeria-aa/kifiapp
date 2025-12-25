@@ -19,8 +19,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
-        name: 'TaniTrack - Hatchery Management',
-        short_name: 'TaniTrack',
+        name: 'KifiApp - Hatchery Management',
+        short_name: 'KifiApp',
         description: 'Mobile-first hatchery management system for fish farming',
         theme_color: '#2563eb',
         background_color: '#ffffff',

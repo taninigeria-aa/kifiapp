@@ -8,6 +8,7 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
         const totalFishResult = await query(`SELECT SUM(current_count) as total FROM batches WHERE status = 'Active'`);
         const spawnsThisWeekResult = await query(`SELECT COUNT(*) as count FROM spawns WHERE spawn_date >= CURRENT_DATE - INTERVAL '7 days'`);
         const salesThisWeekResult = await query(`SELECT SUM(total_amount_ngn) as total FROM sales WHERE sale_date >= CURRENT_DATE - INTERVAL '7 days'`);
+        const expensesThisMonthResult = await query(`SELECT SUM(amount_ngn) as total FROM expenses WHERE expense_date >= DATE_TRUNC('month', CURRENT_DATE)`);
 
         // For now, mock some data if DB is empty to show UI
         const summary = {
@@ -15,7 +16,7 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
             total_fish: parseInt(totalFishResult.rows[0]?.total || '0'),
             spawns_this_week: parseInt(spawnsThisWeekResult.rows[0]?.count || '0'),
             sales_this_week: parseInt(salesThisWeekResult.rows[0]?.total || '0'),
-            expenses_this_month: 0, // Placeholder
+            expenses_this_month: parseInt(expensesThisMonthResult.rows[0]?.total || '0'),
             low_stock_items: 0, // Placeholder
             active_health_issues: 0 // Placeholder
         };

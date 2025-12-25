@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '../components/layout/AppLayout';
 import { StatCard } from '../components/StatCard';
-import { Fish, Layers, Sprout, Plus, ClipboardList } from 'lucide-react';
+import { Fish, Layers, Plus, ClipboardList, Activity } from 'lucide-react';
 import { NairaSign } from '../components/icons/NairaSign';
 import api from '../lib/api';
 
@@ -11,6 +11,7 @@ interface DashboardSummary {
     total_fish: number;
     spawns_this_week: number;
     sales_this_week: number;
+    expenses_this_month: number;
 }
 
 export default function Dashboard() {
@@ -43,7 +44,7 @@ export default function Dashboard() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
-                        <p className="text-gray-500">Welcome back to TaniTrack.</p>
+                        <p className="text-gray-500">Welcome back to KifiApp.</p>
                     </div>
                     <div className="flex gap-2">
                         <button
@@ -67,35 +68,35 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
                     <StatCard
-                        title="Active Batches"
-                        value={loading ? '-' : summary?.active_batches || 0}
-                        icon={Layers}
-                        color="blue"
-                        onClick={() => navigate('/batches')}
+                        title="Sales (Week)"
+                        value={loading ? '-' : `₦${summary?.sales_this_week?.toLocaleString() || 0} `}
+                        icon={NairaSign}
+                        color="green"
+                        onClick={() => navigate('/sales')}
                     />
 
                     <StatCard
-                        title="Total Fish Stock"
-                        value={loading ? '-' : summary?.total_fish?.toLocaleString() || 0}
-                        icon={Fish}
-                        color="green"
-                        onClick={() => navigate('/batches')}
+                        title="Expenses (Month)"
+                        value={loading ? '-' : `₦${summary?.expenses_this_month?.toLocaleString() || 0}`}
+                        icon={Activity}
+                        color="red"
+                        onClick={() => navigate('/expenses')}
                     />
 
                     <StatCard
                         title="Spawns (Week)"
                         value={loading ? '-' : summary?.spawns_this_week || 0}
-                        icon={Sprout}
+                        icon={Fish}
                         color="purple"
                         onClick={() => navigate('/spawns')}
                     />
 
                     <StatCard
-                        title="Sales (Week)"
-                        value={loading ? '-' : `₦${summary?.sales_this_week?.toLocaleString() || 0} `}
-                        icon={NairaSign}
-                        color="orange"
-                        onClick={() => navigate('/sales')}
+                        title="Active Batches"
+                        value={loading ? '-' : summary?.active_batches || 0}
+                        icon={Layers}
+                        color="blue"
+                        onClick={() => navigate('/batches')}
                     />
                 </div>
 

@@ -36,7 +36,7 @@ export const generateFinancialReport = (data: FinancialReportData) => {
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(37, 99, 235); // Blue color
-    doc.text('TaniTrack', 14, 22);
+    doc.text('KifiApp', 14, 22);
 
     doc.setFontSize(14);
     doc.setTextColor(0, 0, 0);
@@ -228,14 +228,14 @@ export const generateFinancialReport = (data: FinancialReportData) => {
 
         // Company name in footer
         doc.text(
-            'TaniTrack Hatchery Management',
+            'KifiApp Hatchery Management',
             14,
             doc.internal.pageSize.getHeight() - 10
         );
     }
 
     // Save the PDF
-    const fileName = `TaniTrack_Financial_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+    const fileName = `KifiApp_Financial_Report_${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(fileName);
 };
 // Sales Report Interfaces and Generator
@@ -280,7 +280,7 @@ export const generateSalesReport = (data: SalesReportData) => {
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(34, 197, 94); // Green color for sales
-    doc.text('TaniTrack', 14, 22);
+    doc.text('KifiApp', 14, 22);
 
     doc.setFontSize(14);
     doc.setTextColor(0, 0, 0);
@@ -505,14 +505,14 @@ export const generateSalesReport = (data: SalesReportData) => {
 
         // Company name in footer
         doc.text(
-            'TaniTrack Hatchery Management',
+            'KifiApp Hatchery Management',
             14,
             doc.internal.pageSize.getHeight() - 10
         );
     }
 
     // Save the PDF
-    const fileName = `TaniTrack_Sales_Report_${data.period.start_date}_to_${data.period.end_date}.pdf`;
+    const fileName = `KifiApp_Sales_Report_${data.period.start_date}_to_${data.period.end_date}.pdf`;
     doc.save(fileName);
 };
 // Production Report Interfaces and Generator
@@ -549,7 +549,7 @@ export const generateProductionReport = (data: ProductionReportData) => {
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(147, 51, 234); // Purple color for production
-    doc.text('TaniTrack', 14, 22);
+    doc.text('KifiApp', 14, 22);
 
     doc.setFontSize(14);
     doc.setTextColor(0, 0, 0);
@@ -720,13 +720,13 @@ export const generateProductionReport = (data: ProductionReportData) => {
 
         // Company name in footer
         doc.text(
-            'TaniTrack Hatchery Management',
+            'KifiApp Hatchery Management',
             14,
             doc.internal.pageSize.getHeight() - 10
         );
     }
 
     // Save the PDF
-    const fileName = `TaniTrack_Production_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+    const fileName = `KifiApp_Production_Report_${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(fileName);
 };

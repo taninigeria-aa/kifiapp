@@ -19,7 +19,7 @@ interface CachedDataItem {
 
 class OfflineStorage {
     private dbPromise: Promise<any>;
-    private readonly DB_NAME = 'tanitrack-offline';
+    private readonly DB_NAME = 'kifiapp-offline';
     private readonly DB_VERSION = 1;
 
     constructor() {

@@ -10,7 +10,7 @@ export const TopBar = () => {
                 <button className="md:hidden mr-4 text-gray-500 hover:text-gray-900">
                     <Menu className="h-6 w-6" />
                 </button>
-                <span className="md:hidden text-lg font-bold text-gray-900">TaniTrack</span>
+                <span className="md:hidden text-lg font-bold text-gray-900">KifiApp</span>
                 <h1 className="hidden md:block text-xl font-semibold text-gray-800">
                     {/* Default Title, will be dynamic later */}
                     Dashboard

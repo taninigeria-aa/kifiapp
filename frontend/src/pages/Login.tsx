@@ -53,9 +53,9 @@ const Login: React.FC = () => {
                 <div className="flex flex-col items-center mb-8">
                     <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center mb-4">
                         {/* Placeholder Logo Icon */}
-                        <span className="text-white text-4xl font-bold">T</span>
+                        <span className="text-white text-4xl font-bold">K</span>
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900">TaniTrack</h1>
+                    <h1 className="text-xl font-bold text-gray-900">KifiApp</h1>
                     <p className="text-gray-500 text-sm mt-1">Hatchery Management</p>
                 </div>
 

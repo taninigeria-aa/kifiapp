@@ -7,15 +7,15 @@ import { useNavigate } from 'react-router-dom';
 
 const navItems = [
     { icon: Home, label: 'Dashboard', to: '/' },
-    { icon: Layers, label: 'Batches', to: '/batches' },
-    { icon: Fish, label: 'Spawns', to: '/spawns' },
     { icon: NairaSign, label: 'Sales', to: '/sales' },
-    { icon: Users, label: 'Customers', to: '/customers' },
-    { icon: Package, label: 'Feed', to: '/feed' },
     { icon: Activity, label: 'Expenses', to: '/expenses' },
     { icon: BarChart, label: 'Financials', to: '/financial-dashboard' },
-    { icon: Users, label: 'Staff', to: '/workers' },
+    { icon: Fish, label: 'Spawns', to: '/spawns' },
+    { icon: Layers, label: 'Batches', to: '/batches' },
+    { icon: Package, label: 'Feed', to: '/feed' },
+    { icon: Users, label: 'Customers', to: '/customers' },
     { icon: Building, label: 'Suppliers', to: '/suppliers' },
+    { icon: Users, label: 'Staff', to: '/workers' },
 ];
 
 export const Sidebar = () => {
@@ -31,7 +31,7 @@ export const Sidebar = () => {
         <div className="hidden md:flex md:w-64 md:flex-col fixed inset-y-0 z-50 bg-white border-r border-gray-200">
             {/* Logo */}
             <div className="flex items-center justify-center h-16 border-b border-gray-200 px-4">
-                <h1 className="text-xl font-bold text-gray-900">TaniTrack</h1>
+                <h1 className="text-xl font-bold text-gray-900">KifiApp</h1>
             </div>
 
             {/* User Info */}
