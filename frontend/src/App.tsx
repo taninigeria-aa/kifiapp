@@ -67,6 +67,20 @@ function App() {
           <Route path="/financial-dashboard" element={<ProtectedRoute><FinancialDashboard /></ProtectedRoute>} />
           <Route path="/suppliers" element={<ProtectedRoute><SuppliersList /></ProtectedRoute>} />
           <Route path="/workers" element={<ProtectedRoute><WorkersList /></ProtectedRoute>} />
+
+          {/* Catch-all for 404 */}
+          <Route path="*" element={
+            <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
+              <h1 className="text-4xl font-bold text-gray-900 mb-4">404</h1>
+              <p className="text-gray-600 mb-8">Page Not Found</p>
+              <button
+                onClick={() => window.location.href = '/'}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Go Home
+              </button>
+            </div>
+          } />
         </Routes>
       </QueryClientProvider>
     </AuthProvider>
