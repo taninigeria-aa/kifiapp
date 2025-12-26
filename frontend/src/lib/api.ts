@@ -1,7 +1,10 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1').replace(/\/api\/v1\/?$/, '') + '/api/v1',
+    baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:3000')
+        .replace(/\/+$/, '') // Remove trailing slashes
+        .replace(/\/api\/v1$/, '') // Remove /api/v1 if already present
+        + '/api/v1',
     headers: {
         'Content-Type': 'application/json',
     },
