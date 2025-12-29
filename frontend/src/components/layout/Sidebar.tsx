@@ -11,7 +11,7 @@ const navItems = [
     { icon: Activity, label: 'Expenses', to: '/expenses' },
     { icon: BarChart, label: 'Financials', to: '/financial-dashboard' },
     { icon: Fish, label: 'Spawns', to: '/spawns' },
-    { icon: Fish, label: 'Broodstock', to: '/broodstock' },
+
     { icon: Layers, label: 'Batches', to: '/batches' },
     { icon: Building, label: 'Tanks', to: '/tanks' },
     { icon: Package, label: 'Feed', to: '/feed' },

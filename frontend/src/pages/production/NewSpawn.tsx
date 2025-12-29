@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
@@ -15,55 +14,16 @@ interface SpawnFormData {
     estimated_eggs: number;
 }
 
-interface BroodstockOption {
-    broodstock_id: number;
-    broodstock_code: string;
-    sex: string;
-    current_weight_kg: number;
-}
+
 
 export default function NewSpawn() {
     const navigate = useNavigate();
-    const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<SpawnFormData>({
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SpawnFormData>({
         defaultValues: {
             spawn_date: new Date().toISOString().split('T')[0],
             injection_time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
         }
     });
-
-    const [options, setOptions] = useState<{ females: BroodstockOption[], males: BroodstockOption[] }>({ females: [], males: [] });
-
-    const femaleCode = watch('female_code');
-    const maleCode = watch('male_code');
-
-    useEffect(() => {
-        const fetchOptions = async () => {
-            try {
-                const response = await api.get('/spawns/options');
-                if (response.data.success) {
-                    setOptions(response.data.data);
-                }
-            } catch (error) {
-                console.error('Failed to fetch broodstock options', error);
-            }
-        };
-        fetchOptions();
-    }, []);
-
-    // Auto-fill weights when code is selected
-    useEffect(() => {
-        if (femaleCode) {
-            const f = options.females.find(o => o.broodstock_code === femaleCode);
-            if (f) setValue('female_weight', f.current_weight_kg);
-        }
-    }, [femaleCode, options.females, setValue]);
-
-    useEffect(() => {
-        if (maleCode) {
-            const m = options.males.find(o => o.broodstock_code === maleCode);
-            if (m) setValue('male_weight', m.current_weight_kg);
-        }
-    }, [maleCode, options.males, setValue]);
 
     const onSubmit = async (data: SpawnFormData) => {
         try {

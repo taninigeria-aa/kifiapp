@@ -14,8 +14,7 @@ import BatchDetails from './pages/production/BatchDetails';
 import SalesList from './pages/sales/SalesList';
 import NewSale from './pages/sales/NewSale';
 import CustomerList from './pages/sales/CustomerList';
-import BroodstockList from './pages/production/BroodstockList';
-import NewBroodstock from './pages/production/NewBroodstock';
+
 import FeedInventory from './pages/feed/FeedInventory';
 import FeedLog from './pages/feed/FeedLog';
 import ExpensesList from './pages/finance/ExpensesList';
@@ -63,8 +62,7 @@ function App() {
           <Route path="/sales" element={<ProtectedRoute><SalesList /></ProtectedRoute>} />
           <Route path="/sales/new" element={<ProtectedRoute><NewSale /></ProtectedRoute>} />
           <Route path="/customers" element={<ProtectedRoute><CustomerList /></ProtectedRoute>} />
-          <Route path="/broodstock" element={<ProtectedRoute><BroodstockList /></ProtectedRoute>} />
-          <Route path="/broodstock/new" element={<ProtectedRoute><NewBroodstock /></ProtectedRoute>} />
+
           <Route path="/feed" element={<ProtectedRoute><FeedInventory /></ProtectedRoute>} />
           <Route path="/feed/log" element={<ProtectedRoute><FeedLog /></ProtectedRoute>} />
           <Route path="/expenses" element={<ProtectedRoute><ExpensesList /></ProtectedRoute>} />
