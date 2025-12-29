@@ -4,7 +4,12 @@ import { query } from '../config/db';
 
 export const getExpenses = async (req: Request, res: Response) => {
     try {
-        const result = await query('SELECT *, amount_ngn as amount FROM expenses ORDER BY expense_date DESC');
+        const result = await query(`
+            SELECT e.*, e.amount_ngn as amount, c.category_name 
+            FROM expenses e 
+            LEFT JOIN expense_categories c ON e.category_id = c.category_id 
+            ORDER BY e.expense_date DESC
+        `);
         res.json({ success: true, data: result.rows });
     } catch (error: any) {
         console.error('Get expenses error:', error);
@@ -14,26 +19,36 @@ export const getExpenses = async (req: Request, res: Response) => {
 
 export const recordExpense = async (req: Request, res: Response) => {
     try {
-        const { category, amount, description, expense_date } = req.body;
+        const { category_id, amount, description, expense_date, batch_id } = req.body;
 
-        // Note: category in DB is likely an ID or string. Assuming string or using description as category for now 
-        // if category column doesn't match perfectly. Schema showed 'expense_category_id'? 
-        // No, 'expense_categories' table exists. 
-        // Let's assume passed category is just description or we insert into category table. 
-        // For simplicity: We will use 'description' for description and 'amount_ngn' for amount.
-        // We might need to look up category ID. 
-        // Actually, let's keep it simple: Use 'description' field for both/combined if category logic is complex.
+        if (!category_id || !amount) {
+            return res.status(400).json({ success: false, message: 'Category and amount are required' });
+        }
 
         const result = await query(
-            `INSERT INTO expenses (amount_ngn, description, expense_date) 
-             VALUES ($1, $2, $3) 
+            `INSERT INTO expenses (amount_ngn, description, expense_date, category_id, batch_id) 
+             VALUES ($1, $2, $3, $4, $5) 
              RETURNING *`,
-            [amount, description || category, expense_date || new Date()]
+            [amount, description, expense_date || new Date(), category_id, batch_id]
         );
         res.status(201).json({ success: true, data: result.rows[0], message: 'Expense recorded' });
     } catch (error: any) {
         console.error('Record expense error:', error);
         res.status(500).json({ success: false, message: error.message || 'Server error' });
+    }
+};
+
+export const deleteExpense = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const result = await query('DELETE FROM expenses WHERE expense_id = $1 RETURNING *', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Expense not found' });
+        }
+        res.json({ success: true, message: 'Expense deleted successfully' });
+    } catch (error: any) {
+        console.error('Delete expense error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -70,7 +85,6 @@ export const getFinancialSummary = async (req: Request, res: Response) => {
 
 export const getDetailedFinancialReport = async (req: Request, res: Response) => {
     try {
-        // 1. Get Summary
         const expenseRes = await query('SELECT SUM(amount_ngn) as total_expenses FROM expenses');
         const totalExpenses = Number(expenseRes.rows[0].total_expenses) || 0;
 
@@ -82,7 +96,6 @@ export const getDetailedFinancialReport = async (req: Request, res: Response) =>
 
         const combinedExpenses = totalExpenses + totalSalaries;
 
-        // 2. Get Recent Sales (Last 10)
         const recentSalesRes = await query(`
             SELECT s.sale_code, c.full_name as customer_name, s.sale_date, s.total_amount_ngn
             FROM sales s
@@ -91,11 +104,11 @@ export const getDetailedFinancialReport = async (req: Request, res: Response) =>
             LIMIT 10
         `);
 
-        // 3. Get Recent Expenses (Last 10)
         const recentExpensesRes = await query(`
-            SELECT description, expense_date, amount_ngn
-            FROM expenses
-            ORDER BY expense_date DESC
+            SELECT e.description, e.expense_date, e.amount_ngn, c.category_name
+            FROM expenses e
+            LEFT JOIN expense_categories c ON e.category_id = c.category_id
+            ORDER BY e.expense_date DESC
             LIMIT 10
         `);
 
@@ -119,3 +132,67 @@ export const getDetailedFinancialReport = async (req: Request, res: Response) =>
     }
 };
 
+// --- Categories ---
+
+export const getCategories = async (req: Request, res: Response) => {
+    try {
+        const result = await query('SELECT * FROM expense_categories ORDER BY category_name ASC');
+        res.json({ success: true, data: result.rows });
+    } catch (error: any) {
+        console.error('Get categories error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+export const addCategory = async (req: Request, res: Response) => {
+    try {
+        const { category_name, description } = req.body;
+        if (!category_name) {
+            return res.status(400).json({ success: false, message: 'Category name is required' });
+        }
+        const result = await query(
+            'INSERT INTO expense_categories (category_name, description) VALUES ($1, $2) RETURNING *',
+            [category_name, description]
+        );
+        res.status(201).json({ success: true, data: result.rows[0] });
+    } catch (error: any) {
+        console.error('Add category error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+export const updateCategory = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { category_name, description, is_active } = req.body;
+        const result = await query(
+            'UPDATE expense_categories SET category_name = $1, description = $2, is_active = $3 WHERE category_id = $4 RETURNING *',
+            [category_name, description, is_active, id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Category not found' });
+        }
+        res.json({ success: true, data: result.rows[0] });
+    } catch (error: any) {
+        console.error('Update category error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+export const deleteCategory = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const deps = await query('SELECT expense_id FROM expenses WHERE category_id = $1 LIMIT 1', [id]);
+        if (deps.rows.length > 0) {
+            return res.status(400).json({ success: false, message: 'Cannot delete category with associated expenses' });
+        }
+        const result = await query('DELETE FROM expense_categories WHERE category_id = $1 RETURNING *', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Category not found' });
+        }
+        res.json({ success: true, message: 'Category deleted successfully' });
+    } catch (error: any) {
+        console.error('Delete category error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};

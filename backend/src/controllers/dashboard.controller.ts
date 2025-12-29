@@ -7,7 +7,7 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
         const activeBatchesResult = await query(`SELECT COUNT(*) as count FROM batches WHERE status = 'Active'`);
         const totalFishResult = await query(`SELECT SUM(current_count) as total FROM batches WHERE status = 'Active'`);
         const spawnsThisWeekResult = await query(`SELECT COUNT(*) as count FROM spawns WHERE spawn_date >= CURRENT_DATE - INTERVAL '30 days'`);
-        const salesThisWeekResult = await query(`SELECT SUM(total_amount_ngn) as total FROM sales WHERE sale_date >= CURRENT_DATE - INTERVAL '7 days'`);
+        const salesThisMonthResult = await query(`SELECT COALESCE(SUM(total_amount_ngn), 0) as total FROM sales WHERE sale_date >= CURRENT_DATE - INTERVAL '30 days'`);
 
         // Use a safe query that won't fail if table doesn't exist (though it should)
         // Or better yet, wrap in try-catch specifically for this new feature 
@@ -24,7 +24,7 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
             active_batches: parseInt(activeBatchesResult.rows[0]?.count || '0'),
             total_fish: parseInt(totalFishResult.rows[0]?.total || '0'),
             spawns_this_week: parseInt(spawnsThisWeekResult.rows[0]?.count || '0'),
-            sales_this_week: parseInt(salesThisWeekResult.rows[0]?.total || '0'),
+            sales_this_week: parseFloat(salesThisMonthResult.rows[0]?.total || '0'),
             expenses_this_month: expensesThisMonth,
             low_stock_items: 0, // Placeholder
             active_health_issues: 0 // Placeholder

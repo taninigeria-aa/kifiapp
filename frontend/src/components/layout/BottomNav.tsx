@@ -1,16 +1,15 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Fish, BarChart, Menu } from 'lucide-react';
-import { NairaSign } from '../icons/NairaSign';
+import { Home, Fish, Layers, Building, Users } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 
 // Mobile only shows 5 primary items
 const navItems = [
     { icon: Home, label: 'Home', to: '/dashboard' },
-    { icon: Fish, label: 'Prod', to: '/production' },
-    { icon: NairaSign, label: 'Sales', to: '/sales' },
-    { icon: BarChart, label: 'Reports', to: '/reports' },
-    { icon: Menu, label: 'More', to: '/more' }, // Will link to drawer or overflow menu
+    { icon: Fish, label: 'Spawns', to: '/spawns' },
+    { icon: Layers, label: 'Batches', to: '/batches' },
+    { icon: Building, label: 'Tanks', to: '/tanks' },
+    { icon: Users, label: 'Staff', to: '/workers' },
 ];
 
 export const BottomNav = () => {

@@ -107,8 +107,8 @@ export const useOfflineSync = () => {
         window.addEventListener('offline', handleOffline);
 
         // Initial pending count
-        // eslint-disable-next-line
-        updatePendingCount();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void updatePendingCount();
 
         return () => {
             window.removeEventListener('online', handleOnline);

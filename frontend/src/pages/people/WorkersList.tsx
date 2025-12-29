@@ -48,7 +48,7 @@ export default function WorkersList() {
             setEditingItem(null);
             setFormData({ full_name: '', role: 'Attendant', phone: '', salary_ngn: '', status: 'Active', start_date: new Date().toISOString().split('T')[0] });
             fetchWorkers();
-        } catch (error: any) {
+        } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             alert(error.response?.data?.message || 'Failed to save worker');
         }
     };
@@ -58,7 +58,7 @@ export default function WorkersList() {
         try {
             await api.delete(`/people/workers/${id}`);
             fetchWorkers();
-        } catch (error: any) {
+        } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             alert(error.response?.data?.message || 'Failed to delete worker');
         }
     };

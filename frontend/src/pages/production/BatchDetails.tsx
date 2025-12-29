@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Scale, ArrowRightLeft, TrendingUp, History } from 'lucide-react';
+import { ArrowLeft, Scale, ArrowRightLeft, TrendingUp, History, Heart, Activity } from 'lucide-react';
 import { format } from 'date-fns';
 import { AppLayout } from '../../components/layout/AppLayout';
+import { HealthModal } from '../../components/health/HealthModal';
 import api from '../../lib/api';
 import type { Batch, Tank } from '../../types';
 
@@ -22,31 +23,46 @@ interface BatchMovement {
     notes: string;
 }
 
+interface HealthLog {
+    log_id: number;
+    log_date: string;
+    log_time: string;
+    issue_type: string;
+    issue_description: string;
+    severity: string;
+    action_taken: string;
+    logged_by_name: string;
+}
+
 export default function BatchDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [batch, setBatch] = useState<Batch | null>(null);
     const [growthSamples, setGrowthSamples] = useState<GrowthSample[]>([]);
     const [movements, setMovements] = useState<BatchMovement[]>([]);
+    const [healthLogs, setHealthLogs] = useState<HealthLog[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'overview' | 'growth' | 'movements'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'growth' | 'movements' | 'health'>('overview');
 
     // Modal States
     const [showGrowthModal, setShowGrowthModal] = useState(false);
     const [showMoveModal, setShowMoveModal] = useState(false);
+    const [showHealthModal, setShowHealthModal] = useState(false);
 
     const fetchBatchData = useCallback(async () => {
         if (!id) return;
         try {
-            const [batchRes, growthRes, moveRes] = await Promise.all([
+            const [batchRes, growthRes, moveRes, healthRes] = await Promise.all([
                 api.get(`/production/batches/${id}`),
                 api.get(`/production/batches/${id}/growth`),
-                api.get(`/production/batches/${id}/movements`)
+                api.get(`/production/batches/${id}/movements`),
+                api.get(`/health/logs?batch_id=${id}`) // Fetch health logs
             ]);
 
             if (batchRes.data.success) setBatch(batchRes.data.data);
             if (growthRes.data.success) setGrowthSamples(growthRes.data.data);
             if (moveRes.data.success) setMovements(moveRes.data.data);
+            if (healthRes.data.success) setHealthLogs(healthRes.data.data);
         } catch (error) {
             console.error('Error fetching batch details:', error);
         } finally {
@@ -76,29 +92,36 @@ export default function BatchDetails() {
                     <div className="ml-auto flex gap-2">
                         <button
                             onClick={() => setShowGrowthModal(true)}
-                            className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
+                            className="inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium"
                         >
                             <Scale className="w-4 h-4 mr-2" />
-                            Add Sample
+                            Sample
+                        </button>
+                        <button
+                            onClick={() => setShowHealthModal(true)}
+                            className="inline-flex items-center px-3 py-2 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 text-sm font-medium"
+                        >
+                            <Activity className="w-4 h-4 mr-2" />
+                            Log Issue
                         </button>
                         <button
                             onClick={() => setShowMoveModal(true)}
-                            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                            className="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
                         >
                             <ArrowRightLeft className="w-4 h-4 mr-2" />
-                            Move Batch
+                            Move
                         </button>
                     </div>
                 </div>
 
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {/* Stats Cards - Simplified for space */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                        <p className="text-sm text-gray-500">Current Stage</p>
+                        <p className="text-sm text-gray-500">Stage</p>
                         <p className="text-lg font-bold text-gray-900">{batch.current_stage}</p>
                     </div>
                     <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                        <p className="text-sm text-gray-500">Current Count</p>
+                        <p className="text-sm text-gray-500">Count</p>
                         <p className="text-lg font-bold text-gray-900">{batch.current_count?.toLocaleString()}</p>
                     </div>
                     <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
@@ -113,11 +136,11 @@ export default function BatchDetails() {
 
                 {/* Tabs */}
                 <div className="border-b border-gray-200">
-                    <nav className="-mb-px flex space-x-8">
-                        {['overview', 'growth', 'movements'].map((tab) => (
+                    <nav className="-mb-px flex space-x-8 overflow-x-auto">
+                        {(['overview', 'growth', 'health', 'movements'] as const).map((tab) => (
                             <button
                                 key={tab}
-                                onClick={() => setActiveTab(tab as 'overview' | 'growth' | 'movements')}
+                                onClick={() => setActiveTab(tab)}
                                 className={`
                                     whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm capitalize
                                     ${activeTab === tab
@@ -136,18 +159,24 @@ export default function BatchDetails() {
                     {activeTab === 'overview' && (
                         <div className="space-y-4">
                             <h3 className="font-semibold text-gray-900">Batch Information</h3>
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                    <span className="text-gray-500 block">Source:</span>
-                                    {batch.spawn_id ? `Spawn (${batch.spawn_code})` : 'Purchase'}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                                <div className="space-y-3">
+                                    <div className="flex justify-between border-b pb-2">
+                                        <span className="text-gray-500">Source</span>
+                                        <span className="font-medium">{batch.spawn_id ? `Spawn (${batch.spawn_code})` : 'Purchase'}</span>
+                                    </div>
+                                    <div className="flex justify-between border-b pb-2">
+                                        <span className="text-gray-500">Start Date</span>
+                                        <span className="font-medium">{format(new Date(batch.start_date), 'dd MMM yyyy')}</span>
+                                    </div>
+                                    <div className="flex justify-between border-b pb-2">
+                                        <span className="text-gray-500">Initial Count</span>
+                                        <span className="font-medium">{batch.initial_count?.toLocaleString()}</span>
+                                    </div>
                                 </div>
                                 <div>
-                                    <span className="text-gray-500 block">Initial Count:</span>
-                                    {batch.initial_count?.toLocaleString()}
-                                </div>
-                                <div className="col-span-2">
-                                    <span className="text-gray-500 block">Notes:</span>
-                                    {batch.notes || 'No notes'}
+                                    <span className="text-gray-500 block mb-1">Notes</span>
+                                    <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{batch.notes || 'No notes'}</p>
                                 </div>
                             </div>
                         </div>
@@ -160,29 +189,78 @@ export default function BatchDetails() {
                                 Growth History
                             </h3>
                             {growthSamples.length === 0 ? (
-                                <p className="text-gray-500 text-sm">No growth samples recorded.</p>
+                                <p className="text-gray-500 text-sm py-4">No growth samples recorded.</p>
                             ) : (
                                 <div className="overflow-x-auto">
                                     <table className="min-w-full divide-y divide-gray-200">
-                                        <thead>
+                                        <thead className="bg-gray-50">
                                             <tr>
                                                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Avg Weight (g)</th>
+                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Avg Weight</th>
                                                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Sample Size</th>
                                                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200">
                                             {growthSamples.map((sample) => (
-                                                <tr key={sample.sample_id}>
-                                                    <td className="px-4 py-2 text-sm text-gray-900">{format(new Date(sample.sample_date), 'dd MMM yyyy')}</td>
-                                                    <td className="px-4 py-2 text-sm text-gray-900 font-medium">{sample.avg_weight_g} g</td>
-                                                    <td className="px-4 py-2 text-sm text-gray-500">{sample.sample_size}</td>
-                                                    <td className="px-4 py-2 text-sm text-gray-500">{sample.notes}</td>
+                                                <tr key={sample.sample_id} className="hover:bg-gray-50">
+                                                    <td className="px-4 py-3 text-sm text-gray-900">{format(new Date(sample.sample_date), 'dd MMM yyyy')}</td>
+                                                    <td className="px-4 py-3 text-sm text-gray-900 font-medium">{sample.avg_weight_g} g</td>
+                                                    <td className="px-4 py-3 text-sm text-gray-500">{sample.sample_size}</td>
+                                                    <td className="px-4 py-3 text-sm text-gray-500">{sample.notes}</td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {activeTab === 'health' && (
+                        <div className="space-y-4">
+                            <h3 className="font-semibold text-gray-900 flex items-center">
+                                <Heart className="w-5 h-5 mr-2 text-red-600" />
+                                Health & Observations
+                            </h3>
+                            {healthLogs.length === 0 ? (
+                                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                                    <Activity className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                                    <p className="text-gray-500 text-sm">No health issues recorded.</p>
+                                    <button onClick={() => setShowHealthModal(true)} className="text-blue-600 text-sm font-medium mt-2 hover:underline">
+                                        Log First Issue
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {healthLogs.map((log) => (
+                                        <div key={log.log_id} className="bg-white border rounded-lg p-4 hover:shadow-sm transition-shadow">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div>
+                                                    <span className={`px-2 py-0.5 rounded text-xs font-semibold
+                                                        ${log.severity === 'Low' ? 'bg-blue-100 text-blue-800' :
+                                                            log.severity === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                                                                'bg-red-100 text-red-800'}
+                                                    `}>
+                                                        {log.severity}
+                                                    </span>
+                                                    <h4 className="font-bold text-gray-900 mt-1">{log.issue_type}</h4>
+                                                </div>
+                                                <span className="text-xs text-gray-500">
+                                                    {format(new Date(log.log_date), 'dd MMM yyyy')}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-700 mb-2">{log.issue_description}</p>
+                                            {log.action_taken && (
+                                                <div className="bg-gray-50 p-2 rounded text-xs text-gray-600">
+                                                    <span className="font-medium text-gray-900">Action:</span> {log.action_taken}
+                                                </div>
+                                            )}
+                                            <div className="mt-2 text-xs text-gray-400">
+                                                Logged by {log.logged_by_name}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                             )}
                         </div>
@@ -195,12 +273,12 @@ export default function BatchDetails() {
                                 Movement Log
                             </h3>
                             {movements.length === 0 ? (
-                                <p className="text-gray-500 text-sm">No movements recorded.</p>
+                                <p className="text-gray-500 text-sm py-4">No movements recorded.</p>
                             ) : (
                                 <div className="space-y-4">
                                     {movements.map((move) => (
                                         <div key={move.movement_id} className="flex items-start p-3 bg-gray-50 rounded-lg">
-                                            <div className="min-w-[100px] text-sm text-gray-500">
+                                            <div className="min-w-[100px] text-sm text-gray-500 pt-0.5">
                                                 {format(new Date(move.movement_date), 'dd MMM yyyy')}
                                             </div>
                                             <div>
@@ -225,6 +303,18 @@ export default function BatchDetails() {
                     onSuccess={() => {
                         setShowGrowthModal(false);
                         fetchBatchData(); // Refresh data
+                    }}
+                />
+            )}
+
+            {showHealthModal && (
+                <HealthModal
+                    batchId={Number(id)}
+                    tankId={batch.current_tank_id} // Pass current tank ID
+                    onClose={() => setShowHealthModal(false)}
+                    onSuccess={() => {
+                        setShowHealthModal(false);
+                        fetchBatchData();
                     }}
                 />
             )}

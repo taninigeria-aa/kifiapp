@@ -48,7 +48,7 @@ export default function TankList() {
             setEditingTank(null);
             setFormData({ tank_name: '', tank_type: 'Hatching', location: '', capacity_liters: 0, notes: '', is_active: true });
             fetchTanks();
-        } catch (error: any) {
+        } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             alert(error.response?.data?.message || 'Failed to save tank');
         }
     };
@@ -58,7 +58,7 @@ export default function TankList() {
         try {
             await api.delete(`/production/tanks/${id}`);
             fetchTanks();
-        } catch (error: any) {
+        } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             alert(error.response?.data?.message || 'Failed to delete tank');
         }
     };
@@ -190,10 +190,11 @@ export default function TankList() {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Capacity (L)</label>
                                     <input
                                         type="number"
-                                        value={formData.capacity_liters}
-                                        onChange={e => setFormData({ ...formData, capacity_liters: parseInt(e.target.value) })}
+                                        value={formData.capacity_liters || ''}
+                                        onChange={e => setFormData({ ...formData, capacity_liters: e.target.value === '' ? 0 : parseInt(e.target.value) })}
                                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                         required
+                                        min="1"
                                     />
                                 </div>
                             </div>

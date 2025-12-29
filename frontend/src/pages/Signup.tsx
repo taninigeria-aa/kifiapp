@@ -33,6 +33,7 @@ const Signup = () => {
         }
 
         try {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { confirm_password, ...submitData } = formData;
             const response = await api.post('/auth/register', submitData);
 

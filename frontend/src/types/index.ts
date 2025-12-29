@@ -54,6 +54,7 @@ export interface Tank {
     capacity_liters: number;
     location: string;
     is_active: boolean;
+    notes?: string;
 }
 
 export interface Batch {
@@ -71,3 +72,21 @@ export interface Batch {
     current_avg_size_g?: number;
     notes?: string;
 }
+
+export interface ExpenseCategory {
+    category_id: number;
+    category_name: string;
+    description?: string;
+    is_active: boolean;
+}
+
+export interface Expense {
+    expense_id: number;
+    amount: string; // amount_ngn as string from numeric
+    description: string;
+    expense_date: string;
+    category_id?: number;
+    category_name?: string;
+    batch_id?: number;
+}
+

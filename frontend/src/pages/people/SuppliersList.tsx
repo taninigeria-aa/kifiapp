@@ -133,7 +133,7 @@ export default function SuppliersList() {
                                                     try {
                                                         await api.delete(`/people/suppliers/${s.supplier_id}`);
                                                         fetchSuppliers();
-                                                    } catch (error: any) {
+                                                    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
                                                         alert(error.response?.data?.message || 'Failed to delete supplier');
                                                     }
                                                 }

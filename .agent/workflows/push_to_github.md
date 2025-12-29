@@ -1,29 +1,18 @@
 ---
-description: Push changes to the taninigeria-aa/kifiapp repository
+description: Push changes to the taninigeria-aa/kifiapp repository via fork
 ---
 
-1. Check if the new remote exists, if not add it.
-   ```bash
-   git remote add target https://github.com/taninigeria-aa/kifiapp.git
-   ```
-   Or if you want to replace origin:
-   ```bash
-   git remote set-url origin https://github.com/taninigeria-aa/kifiapp.git
-   ```
-
-2. Stage all changes.
+1. Stage all changes.
    ```bash
    git add .
    ```
 
-3. Commit the changes.
+2. Commit the changes.
    ```bash
-   git commit -m "feat: implement user registration and active user check"
+   git commit -m "Your descriptive commit message"
    ```
 
-4. Push to the repository.
+3. Push directly to your fork.
    ```bash
-   git push -u target main
-   # OR if you replaced origin
-   git push -u origin main
+   git push fork main
    ```

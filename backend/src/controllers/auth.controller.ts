@@ -126,8 +126,29 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const verifyToken = async (req: Request, res: Response) => {
-    // If it reaches here, middleware passed
-    // @ts-ignore
-    const user = req.user;
-    res.json({ success: true, data: { user } });
+    try {
+        // @ts-ignore
+        const userId = req.user?.user_id;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Invalid token payload' });
+        }
+
+        const userResult = await query(
+            `SELECT u.user_id, u.username, u.full_name, u.phone_number, r.role_name as role 
+             FROM users u 
+             JOIN user_roles r ON u.role_id = r.role_id 
+             WHERE u.user_id = $1`,
+            [userId]
+        );
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        res.json({ success: true, data: userResult.rows[0] });
+    } catch (error: any) {
+        console.error('Verify token error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
 };

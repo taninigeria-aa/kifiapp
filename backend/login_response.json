@@ -1,0 +1,1 @@
+{"success":true,"message":"Login successful","data":{"user":{"user_id":1,"username":"admin","full_name":"System Administrator","role":"owner"},"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoib3duZXIiLCJ1c2VybmFtZSI6ImFkbWluIiwiaWF0IjoxNzY3MDE0MDc5LCJleHAiOjE3NjcxMDA0Nzl9.b3PWw8iReGTZT1MJskBqrwc3xTZizRWVpU5jnFPWNqE"}}

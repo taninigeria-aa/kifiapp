@@ -32,13 +32,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     useEffect(() => {
-        const initAuth = async () => {
-            if (token) {
+        const checkAuth = async () => {
+            const storedToken = localStorage.getItem('token');
+            if (storedToken) {
                 try {
                     // Verify token with backend
-                    const response = await api.get('/auth/verify');
+                    const response = await api.get('/auth/me');
                     if (response.data.success) {
-                        setUser(response.data.data.user);
+                        setUser(response.data.data);
                     } else {
                         logout();
                     }
@@ -50,12 +51,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsLoading(false);
         };
 
-        initAuth();
+        checkAuth();
     }, [token]);
 
     const login = (newToken: string, newUser: User) => {
         localStorage.setItem('token', newToken);
-        // localStorage.setItem('user', JSON.stringify(newUser)); // Optional convenience
         setToken(newToken);
         setUser(newUser);
     };

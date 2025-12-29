@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
@@ -15,58 +14,16 @@ interface SpawnFormData {
     estimated_eggs: number;
 }
 
-interface BroodstockOption {
-    broodstock_id: number;
-    broodstock_code: string;
-    sex: string;
-    current_weight_kg: number;
-}
+
 
 export default function NewSpawn() {
     const navigate = useNavigate();
-    const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<SpawnFormData>({
+    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SpawnFormData>({
         defaultValues: {
             spawn_date: new Date().toISOString().split('T')[0],
             injection_time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
         }
     });
-
-    const [options, setOptions] = useState<{ females: BroodstockOption[], males: BroodstockOption[] }>({ females: [], males: [] });
-    const [loading, setLoading] = useState(true);
-
-    const femaleCode = watch('female_code');
-    const maleCode = watch('male_code');
-
-    useEffect(() => {
-        const fetchOptions = async () => {
-            try {
-                const response = await api.get('/spawns/options');
-                if (response.data.success) {
-                    setOptions(response.data.data);
-                }
-            } catch (error) {
-                console.error('Failed to fetch broodstock options', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchOptions();
-    }, []);
-
-    // Auto-fill weights when code is selected
-    useEffect(() => {
-        if (femaleCode) {
-            const f = options.females.find(o => o.broodstock_code === femaleCode);
-            if (f) setValue('female_weight', f.current_weight_kg);
-        }
-    }, [femaleCode, options.females, setValue]);
-
-    useEffect(() => {
-        if (maleCode) {
-            const m = options.males.find(o => o.broodstock_code === maleCode);
-            if (m) setValue('male_weight', m.current_weight_kg);
-        }
-    }, [maleCode, options.males, setValue]);
 
     const onSubmit = async (data: SpawnFormData) => {
         try {
@@ -74,7 +31,7 @@ export default function NewSpawn() {
             if (response.data.success) {
                 navigate('/spawns');
             }
-        } catch (error: any) {
+        } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             console.error('Create spawn error', error);
             const msg = error.response?.data?.message || 'Failed to create spawn.';
             alert(msg);
@@ -107,18 +64,12 @@ export default function NewSpawn() {
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Female Broodstock</label>
-                                    <select
+                                    <input
+                                        type="text"
+                                        placeholder="Enter Female Code"
                                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                        {...register('female_code', { required: 'Female is required' })}
-                                        disabled={loading}
-                                    >
-                                        <option value="">Select Female...</option>
-                                        {options.females.map(f => (
-                                            <option key={f.broodstock_id} value={f.broodstock_code}>
-                                                {f.broodstock_code} ({f.current_weight_kg}kg)
-                                            </option>
-                                        ))}
-                                    </select>
+                                        {...register('female_code', { required: 'Female code is required' })}
+                                    />
                                     {errors.female_code && <p className="text-xs text-red-500 mt-1">{errors.female_code.message}</p>}
                                 </div>
                                 <div>
@@ -135,18 +86,12 @@ export default function NewSpawn() {
                             <div className="space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Male Broodstock</label>
-                                    <select
+                                    <input
+                                        type="text"
+                                        placeholder="Enter Male Code"
                                         className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                        {...register('male_code', { required: 'Male is required' })}
-                                        disabled={loading}
-                                    >
-                                        <option value="">Select Male...</option>
-                                        {options.males.map(m => (
-                                            <option key={m.broodstock_id} value={m.broodstock_code}>
-                                                {m.broodstock_code} ({m.current_weight_kg}kg)
-                                            </option>
-                                        ))}
-                                    </select>
+                                        {...register('male_code', { required: 'Male code is required' })}
+                                    />
                                     {errors.male_code && <p className="text-xs text-red-500 mt-1">{errors.male_code.message}</p>}
                                 </div>
                                 <div>

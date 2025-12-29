@@ -42,8 +42,6 @@ export default function FeedInventory() {
     const totalKg = Number(formData.bag_size_kg) * Number(formData.num_bags);
     const totalCost = Number(formData.cost_per_bag) * Number(formData.num_bags);
 
-
-
     const fetchFeed = () => {
         Promise.all([
             api.get('/finance/feed'),

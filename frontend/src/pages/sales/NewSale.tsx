@@ -78,7 +78,7 @@ export default function NewSale() {
             navigate('/sales');
         } catch (error) {
             console.error('Failed to create sale', error);
-            alert((error as any).response?.data?.message || 'Failed to record sale. Please check your inputs.');
+            alert((error as any).response?.data?.message || 'Failed to record sale. Please check your inputs.'); // eslint-disable-line @typescript-eslint/no-explicit-any
         } finally {
             setLoading(false);
         }

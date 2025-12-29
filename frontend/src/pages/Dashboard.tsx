@@ -68,7 +68,7 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
                     <StatCard
-                        title="Sales (Week)"
+                        title="Sales (Month)"
                         value={loading ? '-' : `₦${summary?.sales_this_week?.toLocaleString() || 0} `}
                         icon={NairaSign}
                         color="green"
