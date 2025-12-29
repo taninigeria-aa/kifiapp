@@ -20,7 +20,31 @@ export interface Broodstock {
     broodstock_id: number;
     broodstock_code: string;
     sex: 'Male' | 'Female';
-    health_status: 'Active' | 'Quarantine' | 'Retired';
+    health_status: string;
+    current_weight_kg?: number;
+    acquisition_date?: string;
+    notes?: string;
+    species?: string;
+}
+
+export interface Worker {
+    worker_id: number;
+    full_name: string;
+    role: string;
+    phone_number?: string;
+    start_date?: string;
+    salary_ngn?: number;
+    status: 'Active' | 'Inactive';
+    notes?: string;
+}
+
+export interface Supplier {
+    supplier_id: number;
+    supplier_name: string;
+    contact_person?: string;
+    phone_number?: string;
+    email?: string;
+    location?: string;
 }
 
 export interface Tank {

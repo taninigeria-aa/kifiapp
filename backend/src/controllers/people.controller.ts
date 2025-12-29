@@ -63,6 +63,26 @@ export const updateSupplier = async (req: Request, res: Response) => {
     }
 };
 
+export const deleteSupplier = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        // We could check for dependencies in feed_inventory or feed_purchases
+        // but for now let's just delete or allow delete if not strictly enforced.
+        // Usually suppliers are loose references.
+
+        const result = await query('DELETE FROM suppliers WHERE supplier_id = $1 RETURNING *', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Supplier not found' });
+        }
+
+        res.json({ success: true, message: 'Supplier deleted successfully' });
+    } catch (error: any) {
+        console.error('Error deleting supplier:', error);
+        res.status(500).json({ success: false, message: error.message || 'Server error' });
+    }
+};
+
 // --- Workers ---
 
 export const getWorkers = async (req: Request, res: Response) => {
@@ -92,6 +112,43 @@ export const addWorker = async (req: Request, res: Response) => {
         res.status(201).json({ success: true, data: result.rows[0], message: 'Worker added successfully' });
     } catch (error: any) {
         console.error('Error adding worker:', error);
+        res.status(500).json({ success: false, message: error.message || 'Server error' });
+    }
+};
+
+export const updateWorker = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { full_name, role, phone, start_date, salary_ngn, status } = req.body;
+
+        const result = await query(
+            `UPDATE workers 
+             SET full_name = $1, role = $2, phone_number = $3, start_date = $4, salary_ngn = $5, status = $6
+             WHERE worker_id = $7 RETURNING *`,
+            [full_name, role, phone, start_date, salary_ngn, status, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Worker not found' });
+        }
+
+        res.json({ success: true, data: result.rows[0], message: 'Worker updated successfully' });
+    } catch (error: any) {
+        console.error('Error updating worker:', error);
+        res.status(500).json({ success: false, message: error.message || 'Server error' });
+    }
+};
+
+export const deleteWorker = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const result = await query('DELETE FROM workers WHERE worker_id = $1 RETURNING *', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Worker not found' });
+        }
+        res.json({ success: true, message: 'Worker deleted successfully' });
+    } catch (error: any) {
+        console.error('Error deleting worker:', error);
         res.status(500).json({ success: false, message: error.message || 'Server error' });
     }
 };

@@ -1,41 +1,36 @@
-
 import { Pool } from 'pg';
 import fs from 'fs';
 import path from 'path';
-import dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
 
-dotenv.config();
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
-});
-
-async function initProdDb() {
-    console.log('Starting Production Database Initialization...');
+export async function initializeDatabase(): Promise<void> {
+    const pool = new Pool({
+        connectionString: process.env.DATABASE_URL
+    });
 
     try {
-        // Read schema
-        const schemaPath = path.join(__dirname, 'schema.sql');
+        console.log('Synchronizing database schema...');
+
+        // Read and apply master schema
+        const schemaPath = path.join(__dirname, '../../database/schema.sql');
         const schemaSql = fs.readFileSync(schemaPath, 'utf8');
 
-        // Apply schema
-        console.log('Applying schema...');
+        console.log('Applying database schema (IF NOT EXISTS)...');
         await pool.query(schemaSql);
-        console.log('Schema applied successfully.');
+        console.log('Schema synchronized successfully.');
 
-        // Seed admin user
-        console.log('Seeding admin user...');
+        // Create admin user
+        console.log('Ensuring admin user exists...');
         const hashedPassword = await bcrypt.hash('admin123', 10);
 
-        // Get role ID
+        // Get owner role ID
         const roleRes = await pool.query("SELECT role_id FROM user_roles WHERE role_name = 'owner'");
         if (roleRes.rows.length === 0) {
-            throw new Error("Role 'owner' not found after schema application.");
+            throw new Error("Role 'owner' not found. Please check schema.sql.");
         }
         const roleId = roleRes.rows[0].role_id;
 
-        // Insert admin
+        // Insert admin user
         const userRes = await pool.query(
             `INSERT INTO users (username, full_name, phone_number, password_hash, role_id)
              VALUES ($1, $2, $3, $4, $5)
@@ -45,16 +40,15 @@ async function initProdDb() {
         );
 
         if (userRes.rows.length > 0) {
-            console.log('Admin user created: admin / admin123');
-        } else {
-            console.log('Admin user already exists.');
+            console.log('✅ Admin user verified/created.');
         }
 
-    } catch (err) {
-        console.error('Error initializing production database:', err);
+        console.log('✅ Database synchronization complete!');
+
+    } catch (error) {
+        console.error('❌ Error synchronizing database:', error);
+        throw error;
     } finally {
         await pool.end();
     }
 }
-
-initProdDb();

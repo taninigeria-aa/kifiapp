@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getTanks } from '../controllers/tank.controller';
+import { getTanks, createTank, updateTank, deleteTank } from '../controllers/tank.controller';
 import {
     getBatches,
     createBatch,
@@ -19,6 +19,9 @@ router.use(authenticateToken);
 
 // Tanks
 router.get('/tanks', getTanks);
+router.post('/tanks', createTank);
+router.put('/tanks/:id', updateTank);
+router.delete('/tanks/:id', deleteTank);
 
 // Batches
 router.get('/batches', getBatches);

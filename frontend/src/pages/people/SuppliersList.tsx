@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { Plus, Phone, Mail, Building, Pencil } from 'lucide-react';
+import { Plus, Phone, Mail, Building, Pencil, Trash2 } from 'lucide-react';
 import { AppLayout } from '../../components/layout/AppLayout';
 import api from '../../lib/api';
 
@@ -108,7 +108,7 @@ export default function SuppliersList() {
                                             <span>{s.email || '-'}</span>
                                         </div>
                                     </div>
-                                    <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end">
+                                    <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
                                         <button
                                             onClick={() => {
                                                 setEditingSupplier(s);
@@ -126,6 +126,21 @@ export default function SuppliersList() {
                                         >
                                             <Pencil className="w-4 h-4 mr-1" />
                                             Edit
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                if (window.confirm('Are you sure you want to delete this supplier?')) {
+                                                    try {
+                                                        await api.delete(`/people/suppliers/${s.supplier_id}`);
+                                                        fetchSuppliers();
+                                                    } catch (error: any) {
+                                                        alert(error.response?.data?.message || 'Failed to delete supplier');
+                                                    }
+                                                }
+                                            }}
+                                            className="text-red-400 hover:text-red-600 transition-colors"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
                                 </div>

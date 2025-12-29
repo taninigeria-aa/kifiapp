@@ -43,3 +43,48 @@ export const getBroodstock = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
+
+export const updateBroodstock = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { broodstock_code, sex, current_weight_kg, health_status, notes } = req.body;
+
+        const result = await query(
+            `UPDATE broodstock 
+             SET broodstock_code = $1, sex = $2, current_weight_kg = $3, health_status = $4, notes = $5
+             WHERE broodstock_id = $6 RETURNING *`,
+            [broodstock_code, sex, current_weight_kg, health_status, notes, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Broodstock not found' });
+        }
+
+        res.json({ success: true, data: result.rows[0], message: 'Broodstock updated successfully' });
+    } catch (error: any) {
+        console.error('Update broodstock error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};
+
+export const deleteBroodstock = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        // Check for dependencies (spawns)
+        const dependencies = await query('SELECT spawn_id FROM spawns WHERE female1_id = $1 OR male1_id = $1 LIMIT 1', [id]);
+        if (dependencies.rows.length > 0) {
+            return res.status(400).json({ success: false, message: 'Cannot delete broodstock that has spawning records. Mark as inactive instead.' });
+        }
+
+        const result = await query('DELETE FROM broodstock WHERE broodstock_id = $1 RETURNING *', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Broodstock not found' });
+        }
+
+        res.json({ success: true, message: 'Broodstock deleted successfully' });
+    } catch (error: any) {
+        console.error('Delete broodstock error:', error);
+        res.status(500).json({ success: false, message: 'Server error: ' + error.message });
+    }
+};

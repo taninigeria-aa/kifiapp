@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
@@ -14,9 +15,58 @@ interface SpawnFormData {
     estimated_eggs: number;
 }
 
+interface BroodstockOption {
+    broodstock_id: number;
+    broodstock_code: string;
+    sex: string;
+    current_weight_kg: number;
+}
+
 export default function NewSpawn() {
     const navigate = useNavigate();
-    const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SpawnFormData>();
+    const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<SpawnFormData>({
+        defaultValues: {
+            spawn_date: new Date().toISOString().split('T')[0],
+            injection_time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+        }
+    });
+
+    const [options, setOptions] = useState<{ females: BroodstockOption[], males: BroodstockOption[] }>({ females: [], males: [] });
+    const [loading, setLoading] = useState(true);
+
+    const femaleCode = watch('female_code');
+    const maleCode = watch('male_code');
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            try {
+                const response = await api.get('/spawns/options');
+                if (response.data.success) {
+                    setOptions(response.data.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch broodstock options', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchOptions();
+    }, []);
+
+    // Auto-fill weights when code is selected
+    useEffect(() => {
+        if (femaleCode) {
+            const f = options.females.find(o => o.broodstock_code === femaleCode);
+            if (f) setValue('female_weight', f.current_weight_kg);
+        }
+    }, [femaleCode, options.females, setValue]);
+
+    useEffect(() => {
+        if (maleCode) {
+            const m = options.males.find(o => o.broodstock_code === maleCode);
+            if (m) setValue('male_weight', m.current_weight_kg);
+        }
+    }, [maleCode, options.males, setValue]);
 
     const onSubmit = async (data: SpawnFormData) => {
         try {
@@ -24,9 +74,9 @@ export default function NewSpawn() {
             if (response.data.success) {
                 navigate('/spawns');
             }
-        } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
             console.error('Create spawn error', error);
-            const msg = error.response?.data?.message || 'Failed to create spawn. Please check the Broodstock Codes.';
+            const msg = error.response?.data?.message || 'Failed to create spawn.';
             alert(msg);
         }
     };
@@ -34,8 +84,6 @@ export default function NewSpawn() {
     return (
         <AppLayout>
             <div className="max-w-2xl mx-auto space-y-6">
-
-                {/* Header */}
                 <div className="flex items-center gap-4">
                     <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-full">
                         <ArrowLeft className="w-5 h-5 text-gray-600" />
@@ -45,8 +93,6 @@ export default function NewSpawn() {
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
-                        {/* Spawn Date */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Spawn Date</label>
                             <input
@@ -58,16 +104,21 @@ export default function NewSpawn() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Female Selection */}
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Female Code(s)</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. F-001, F-002"
-                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 uppercase"
-                                        {...register('female_code', { required: 'Female code is required' })}
-                                    />
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Female Broodstock</label>
+                                    <select
+                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        {...register('female_code', { required: 'Female is required' })}
+                                        disabled={loading}
+                                    >
+                                        <option value="">Select Female...</option>
+                                        {options.females.map(f => (
+                                            <option key={f.broodstock_id} value={f.broodstock_code}>
+                                                {f.broodstock_code} ({f.current_weight_kg}kg)
+                                            </option>
+                                        ))}
+                                    </select>
                                     {errors.female_code && <p className="text-xs text-red-500 mt-1">{errors.female_code.message}</p>}
                                 </div>
                                 <div>
@@ -75,23 +126,27 @@ export default function NewSpawn() {
                                     <input
                                         type="number"
                                         step="0.01"
-                                        placeholder="e.g. 1.5"
-                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50"
                                         {...register('female_weight', { valueAsNumber: true })}
                                     />
                                 </div>
                             </div>
 
-                            {/* Male Selection */}
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Male Code</label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. M-001"
-                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 uppercase"
-                                        {...register('male_code', { required: 'Male code is required' })}
-                                    />
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Male Broodstock</label>
+                                    <select
+                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        {...register('male_code', { required: 'Male is required' })}
+                                        disabled={loading}
+                                    >
+                                        <option value="">Select Male...</option>
+                                        {options.males.map(m => (
+                                            <option key={m.broodstock_id} value={m.broodstock_code}>
+                                                {m.broodstock_code} ({m.current_weight_kg}kg)
+                                            </option>
+                                        ))}
+                                    </select>
                                     {errors.male_code && <p className="text-xs text-red-500 mt-1">{errors.male_code.message}</p>}
                                 </div>
                                 <div>
@@ -99,17 +154,14 @@ export default function NewSpawn() {
                                     <input
                                         type="number"
                                         step="0.01"
-                                        placeholder="e.g. 1.2"
-                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50"
                                         {...register('male_weight', { valueAsNumber: true })}
                                     />
                                 </div>
                             </div>
                         </div>
 
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Injection Time */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Injection Time</label>
                                 <input
@@ -120,7 +172,6 @@ export default function NewSpawn() {
                                 {errors.injection_time && <p className="text-xs text-red-500 mt-1">{errors.injection_time.message}</p>}
                             </div>
 
-                            {/* Estimated Eggs */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Est. Eggs</label>
                                 <input
@@ -129,11 +180,9 @@ export default function NewSpawn() {
                                     className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                     {...register('estimated_eggs', { valueAsNumber: true })}
                                 />
-                                <p className="text-xs text-gray-500 mt-1">Optional estimate based on weight.</p>
                             </div>
                         </div>
 
-                        {/* Submit */}
                         <div className="pt-4 border-t border-gray-100 flex justify-end">
                             <button
                                 type="submit"
@@ -144,7 +193,6 @@ export default function NewSpawn() {
                                 {isSubmitting ? 'Saving...' : 'Save Record'}
                             </button>
                         </div>
-
                     </form>
                 </div>
             </div>

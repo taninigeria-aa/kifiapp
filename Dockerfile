@@ -29,6 +29,9 @@ RUN npm install --production
 # Copy built files from builder
 COPY --from=builder /app/backend/dist ./dist
 
+# Copy database folder for initialization
+COPY backend/database ./database
+
 # Expose port
 EXPOSE 3000
 
