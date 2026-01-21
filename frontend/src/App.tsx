@@ -12,7 +12,6 @@ import NewBatch from './pages/production/NewBatch';
 import EditBatch from './pages/production/EditBatch';
 import BatchDetails from './pages/production/BatchDetails';
 import SalesList from './pages/sales/SalesList';
-import NewSale from './pages/sales/NewSale';
 import CustomerList from './pages/sales/CustomerList';
 import TankList from './pages/tanks/TankList';
 import CreateTank from './pages/tanks/CreateTank';
@@ -65,7 +64,6 @@ function App() {
           <Route path="/batches/:id" element={<ProtectedRoute><BatchDetails /></ProtectedRoute>} />
           <Route path="/batches/:id/edit" element={<ProtectedRoute><EditBatch /></ProtectedRoute>} />
           <Route path="/sales" element={<ProtectedRoute><SalesList /></ProtectedRoute>} />
-          <Route path="/sales/new" element={<ProtectedRoute><NewSale /></ProtectedRoute>} />
           <Route path="/customers" element={<ProtectedRoute><CustomerList /></ProtectedRoute>} />
 
           <Route path="/feed" element={<ProtectedRoute><FeedInventory /></ProtectedRoute>} />
