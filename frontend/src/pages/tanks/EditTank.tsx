@@ -53,7 +53,7 @@ export default function EditTank() {
         notes: tankData.notes || '',
         is_active: tankData.is_active
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.response?.data?.message || 'Failed to load tank');
     } finally {
       setLoading(false);
@@ -84,7 +84,7 @@ export default function EditTank() {
         headers: { Authorization: `Bearer ${token}` }
       });
       navigate('/tanks');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.response?.data?.message || 'Failed to update tank');
     } finally {
       setSubmitting(false);

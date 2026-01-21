@@ -51,8 +51,9 @@ export const useOfflineSync = () => {
                     // Remove from queue on success
                     await offlineStorage.removeFromSyncQueue(item.id);
                     successCount++;
-                } catch (error) {
-                    console.error(`Failed to sync ${item.method} ${item.url}:`, error);
+                } catch (error: unknown) {
+                    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                    console.error(`Failed to sync ${item.method} ${item.url}:`, errorMessage);
 
                     // Increment retry count
                     await offlineStorage.incrementRetryCount(item.id);
@@ -77,8 +78,9 @@ export const useOfflineSync = () => {
             }));
 
             return { successCount, failCount };
-        } catch (error) {
-            console.error('Sync queue error:', error);
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            console.error('Sync queue error:', errorMessage);
             setStatus(prev => ({ ...prev, isSyncing: false }));
             throw error;
         }
@@ -106,15 +108,19 @@ export const useOfflineSync = () => {
         window.addEventListener('online', handleOnline);
         window.addEventListener('offline', handleOffline);
 
-        // Initial pending count
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        void updatePendingCount();
-
         return () => {
             window.removeEventListener('online', handleOnline);
             window.removeEventListener('offline', handleOffline);
         };
-    }, [syncQueue, updatePendingCount]);
+    }, [syncQueue]);
+
+    // Update pending count on mount
+    useEffect(() => {
+        // Wrap in async IIFE to avoid synchronous setState in effect
+        (async () => {
+            await updatePendingCount();
+        })();
+    }, [updatePendingCount]);
 
     // Manual sync trigger
     const triggerSync = useCallback(async () => {
@@ -128,8 +134,7 @@ export const useOfflineSync = () => {
     const queueRequest = useCallback(async (
         method: 'POST' | 'PUT' | 'DELETE',
         url: string,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        data: any
+        data: unknown
     ) => {
         const id = await offlineStorage.addToSyncQueue(method, url, data);
         await updatePendingCount();

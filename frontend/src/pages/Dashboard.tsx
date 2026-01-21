@@ -9,9 +9,9 @@ import api from '../lib/api';
 interface DashboardSummary {
     active_batches: number;
     total_fish: number;
-    spawns_this_week: number;
-    sales_this_week: number;
-    expenses_this_month: number;
+    recent_spawns: number;
+    recent_sales: number;
+    recent_expenses: number;
 }
 
 export default function Dashboard() {
@@ -68,24 +68,24 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
                     <StatCard
-                        title="Sales (Month)"
-                        value={loading ? '-' : `₦${summary?.sales_this_week?.toLocaleString() || 0} `}
+                        title="Sales (Last 60d)"
+                        value={loading ? '-' : `₦${summary?.recent_sales?.toLocaleString() || 0} `}
                         icon={NairaSign}
                         color="green"
                         onClick={() => navigate('/sales')}
                     />
 
                     <StatCard
-                        title="Expenses (Month)"
-                        value={loading ? '-' : `₦${summary?.expenses_this_month?.toLocaleString() || 0}`}
+                        title="Expenses (Last 60d)"
+                        value={loading ? '-' : `₦${summary?.recent_expenses?.toLocaleString() || 0}`}
                         icon={Activity}
                         color="red"
                         onClick={() => navigate('/expenses')}
                     />
 
                     <StatCard
-                        title="Spawns (Month)"
-                        value={loading ? '-' : summary?.spawns_this_week || 0}
+                        title="Spawns (Last 60d)"
+                        value={loading ? '-' : summary?.recent_spawns || 0}
                         icon={Fish}
                         color="purple"
                         onClick={() => navigate('/spawns')}

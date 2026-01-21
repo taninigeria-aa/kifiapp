@@ -6,28 +6,25 @@ export const getDashboardSummary = async (req: Request, res: Response) => {
         // These queries align with the schema views or direct table counts
         const activeBatchesResult = await query(`SELECT COUNT(*) as count FROM batches WHERE status = 'Active'`);
         const totalFishResult = await query(`SELECT SUM(current_count) as total FROM batches WHERE status = 'Active'`);
-        const spawnsThisWeekResult = await query(`SELECT COUNT(*) as count FROM spawns WHERE spawn_date >= CURRENT_DATE - INTERVAL '30 days'`);
-        const salesThisMonthResult = await query(`SELECT COALESCE(SUM(total_amount_ngn), 0) as total FROM sales WHERE sale_date >= CURRENT_DATE - INTERVAL '30 days'`);
+        const recentSpawnsResult = await query(`SELECT COUNT(*) as count FROM spawns WHERE spawn_date >= CURRENT_DATE - INTERVAL '60 days'`);
+        const recentSalesResult = await query(`SELECT COALESCE(SUM(total_amount_ngn), 0) as total FROM sales WHERE sale_date >= CURRENT_DATE - INTERVAL '60 days'`);
 
-        // Use a safe query that won't fail if table doesn't exist (though it should)
-        // Or better yet, wrap in try-catch specifically for this new feature 
-        let expensesThisMonth = 0;
+        let recentExpenses = 0;
         try {
-            const expensesThisMonthResult = await query(`SELECT COALESCE(SUM(amount_ngn), 0) as total FROM expenses WHERE expense_date >= DATE_TRUNC('month', CURRENT_DATE)`);
-            expensesThisMonth = parseFloat(expensesThisMonthResult.rows[0]?.total || '0');
+            const recentExpensesResult = await query(`SELECT COALESCE(SUM(amount_ngn), 0) as total FROM expenses WHERE expense_date >= CURRENT_DATE - INTERVAL '60 days'`);
+            recentExpenses = parseFloat(recentExpensesResult.rows[0]?.total || '0');
         } catch (e) {
-            console.warn('Could not fetch expenses (table might be missing):', e);
+            console.warn('Could not fetch recent expenses:', e);
         }
 
-        // For now, mock some data if DB is empty to show UI
         const summary = {
             active_batches: parseInt(activeBatchesResult.rows[0]?.count || '0'),
             total_fish: parseInt(totalFishResult.rows[0]?.total || '0'),
-            spawns_this_week: parseInt(spawnsThisWeekResult.rows[0]?.count || '0'),
-            sales_this_week: parseFloat(salesThisMonthResult.rows[0]?.total || '0'),
-            expenses_this_month: expensesThisMonth,
-            low_stock_items: 0, // Placeholder
-            active_health_issues: 0 // Placeholder
+            recent_spawns: parseInt(recentSpawnsResult.rows[0]?.count || '0'),
+            recent_sales: parseFloat(recentSalesResult.rows[0]?.total || '0'),
+            recent_expenses: recentExpenses,
+            low_stock_items: 0,
+            active_health_issues: 0
         };
 
         res.json({ success: true, data: summary });

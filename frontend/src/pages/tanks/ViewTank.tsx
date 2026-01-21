@@ -34,7 +34,7 @@ export default function ViewTank() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTank(response.data.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.response?.data?.message || 'Failed to load tank');
     } finally {
       setLoading(false);

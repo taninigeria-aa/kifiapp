@@ -1,13 +1,20 @@
-import app from './app';
 import dotenv from 'dotenv';
-import { initializeDatabase } from './utils/initDatabase';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-dotenv.config();
+// Explicitly load .env from the backend directory
+const envPath = path.resolve(process.cwd(), '.env');
+console.log(`Loading environment from: ${envPath}`);
+dotenv.config({ path: envPath });
+
+import app from './app';
+import { initializeDatabase } from './utils/initDatabase';
 
 const PORT = process.env.PORT || 3000;
 
 if (!process.env.JWT_SECRET) {
     console.error('FATAL ERROR: JWT_SECRET is not defined.');
+    console.log('Current env variables:', Object.keys(process.env).filter(k => k.includes('JWT') || k.includes('DATABASE')));
     process.exit(1);
 }
 

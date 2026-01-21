@@ -24,6 +24,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
     const [isLoading, setIsLoading] = useState(true);
 
+    const login = (newToken: string, newUser: User) => {
+        localStorage.setItem('token', newToken);
+        setToken(newToken);
+        setUser(newUser);
+    };
+
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -52,13 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
 
         checkAuth();
-    }, [token]);
-
-    const login = (newToken: string, newUser: User) => {
-        localStorage.setItem('token', newToken);
-        setToken(newToken);
-        setUser(newUser);
-    };
+    }, []);
 
     return (
         <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user, isLoading }}>

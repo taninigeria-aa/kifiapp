@@ -83,8 +83,11 @@ export default function FeedInventory() {
             setShowModal(false);
             resetForm();
             fetchFeed();
-        } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
-            alert(error.response?.data?.message || 'Failed to save');
+        } catch (error: unknown) {
+            const errorMessage = error instanceof Error && error.response?.data?.message
+                ? error.response.data.message
+                : 'Failed to save';
+            alert(errorMessage);
         }
     };
 

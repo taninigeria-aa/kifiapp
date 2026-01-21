@@ -1,24 +1,35 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { openDB } from 'idb';
+import type { IDBPDatabase } from 'idb';
 
 interface SyncQueueItem {
     id: string;
     method: 'POST' | 'PUT' | 'DELETE';
     url: string;
-    data: any;
+    data: unknown;
     timestamp: number;
     retryCount: number;
 }
 
 interface CachedDataItem {
     key: string;
-    data: any;
+    data: unknown;
     timestamp: number;
     expiresAt?: number;
 }
 
+interface OfflineDB {
+    'sync-queue': {
+        key: string;
+        value: SyncQueueItem;
+    };
+    'cached-data': {
+        key: string;
+        value: CachedDataItem;
+    };
+}
+
 class OfflineStorage {
-    private dbPromise: Promise<any>;
+    private dbPromise: Promise<IDBPDatabase<OfflineDB>>;
     private readonly DB_NAME = 'kifiapp-offline';
     private readonly DB_VERSION = 1;
 
@@ -26,8 +37,8 @@ class OfflineStorage {
         this.dbPromise = this.initDB();
     }
 
-    private async initDB(): Promise<any> {
-        return openDB(this.DB_NAME, this.DB_VERSION, {
+    private async initDB(): Promise<IDBPDatabase<OfflineDB>> {
+        return openDB<OfflineDB>(this.DB_NAME, this.DB_VERSION, {
             upgrade(db) {
                 // Sync Queue Store
                 if (!db.objectStoreNames.contains('sync-queue')) {
@@ -44,7 +55,7 @@ class OfflineStorage {
 
     // ===== SYNC QUEUE METHODS =====
 
-    async addToSyncQueue(method: 'POST' | 'PUT' | 'DELETE', url: string, data: any): Promise<string> {
+    async addToSyncQueue(method: 'POST' | 'PUT' | 'DELETE', url: string, data: unknown): Promise<string> {
         const db = await this.dbPromise;
         const id = `${method}-${url}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -92,7 +103,7 @@ class OfflineStorage {
 
     // ===== CACHED DATA METHODS =====
 
-    async cacheData(key: string, data: any, expiresInMs?: number): Promise<void> {
+    async cacheData(key: string, data: unknown, expiresInMs?: number): Promise<void> {
         const db = await this.dbPromise;
         const timestamp = Date.now();
         const expiresAt = expiresInMs ? timestamp + expiresInMs : undefined;
@@ -107,7 +118,7 @@ class OfflineStorage {
         await db.put('cached-data', item);
     }
 
-    async getCachedData(key: string): Promise<any | null> {
+    async getCachedData(key: string): Promise<unknown | null> {
         const db = await this.dbPromise;
         const cached = await db.get('cached-data', key);
 

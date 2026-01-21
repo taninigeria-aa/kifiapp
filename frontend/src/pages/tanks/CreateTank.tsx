@@ -41,7 +41,7 @@ export default function CreateTank() {
         headers: { Authorization: `Bearer ${token}` }
       });
       navigate('/tanks');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.response?.data?.message || 'Failed to create tank');
       console.error('Error creating tank:', err);
     } finally {

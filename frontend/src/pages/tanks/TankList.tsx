@@ -32,7 +32,7 @@ export default function TankList() {
       });
       setTanks(response.data.data || []);
       setError('');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.response?.data?.message || 'Failed to load tanks');
       console.error('Error fetching tanks:', err);
     } finally {
@@ -48,7 +48,7 @@ export default function TankList() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTanks(tanks.filter(t => t.tank_id !== id));
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.response?.data?.message || 'Failed to delete tank');
     }
   };
